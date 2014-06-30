@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>files</key>
+	<dict>
+		<key>Resources/English.lproj/V4BeanstalkCloudServiceView.nib</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			e/eufXqYTUMK+5RRMhvORUnFlBA=
+			</data>
+			<key>optional</key>
+			<true/>
+		</dict>
+		<key>Resources/beanstalk-banner.png</key>
+		<data>
+		xybCpP63gQz+WkTDKuGnO2FMsi0=
+		</data>
+		<key>Resources/beanstalk-banner@2x.png</key>
+		<data>
+		Vf//iPewcr2nFfhJDZEgeUBGAO8=
+		</data>
+		<key>Resources/beanstalk-repository.png</key>
+		<data>
+		M6bNoh+c9TF5tO+Xx3+RUCXKNp8=
+		</data>
+		<key>Resources/beanstalk-repository@2x.png</key>
+		<data>
+		I3D/aQVukwsUkUiOnnO/Wbxd5Ww=
+		</data>
+	</dict>
+	<key>rules</key>
+	<dict>
+		<key>^Resources/</key>
+		<true/>
+		<key>^Resources/.*\.lproj/</key>
+		<dict>
+			<key>optional</key>
+			<true/>
+			<key>weight</key>
+			<real>1000</real>
+		</dict>
+		<key>^Resources/.*\.lproj/locversion.plist$</key>
+		<dict>
+			<key>omit</key>
+			<true/>
+			<key>weight</key>
+			<real>1100</real>
+		</dict>
+		<key>^version.plist$</key>
+		<true/>
+	</dict>
+</dict>
+</plist>

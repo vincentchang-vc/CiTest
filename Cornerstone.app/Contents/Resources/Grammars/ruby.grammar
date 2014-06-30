@@ -1,0 +1,197 @@
+{
+	id                        : 'ruby';
+	title                     : 'Ruby';
+	match:
+	[ 
+		extension								: 'rb',
+	];
+
+	rules: 
+	[
+		whitespace-rule:
+		{
+		},
+		
+		# Multi-line comment partition which includes SCM keywords
+		
+		multiline-rule:
+		{
+			id                		: 'comment.multiline.ruby';
+			open-sequence     		: @'=begin';
+			close-sequence    		: @'=end';
+			capture-unclosed  		: yes;
+			
+			rules:
+			[
+				whitespace-rule:
+				{
+				},
+				
+				regex-rule:
+				{
+					id                : 'comment.keyword.scm.ruby';
+					case-insensitive  : no;
+					pattern           : @'\$(?<name>\w+)\:(?<value>.*)\s\$';
+					groups:
+					{
+						name            : 'comment.keyword.scm.name.ruby';
+						value           : 'comment.keyword.scm.value.ruby';
+					};
+				},
+				
+				default-rule:
+				{
+				},
+			];
+		},
+		
+		# End-of-line comment partition which includes SCM keywords
+		
+		eol-rule:
+		{
+			id										: 'comment.singleline.ruby';
+			open-sequence					:	@'#';
+
+			rules:
+			[
+				whitespace-rule:
+				{
+				},
+			
+				ref									: 'comment.keyword.scm.ruby',
+
+				default-rule:
+				{
+				},
+			];
+		},
+
+		# Ruby keywords
+
+		word-rule:
+		{
+			id                    : 'keyword.ruby';
+			case-insensitive      : no;
+			words:                [ 
+															'alias', 'and',
+															'BEGIN', 'begin', 'break',
+															'case', 'class', 'def', 'defined?', 'do',
+															'else', 'elsif', 'END', 'end', 'ensure',
+															'false', 'for', 'if', 'in',
+															'module',
+															'next', 'nil', 'not',
+															'or',
+															'redo', 'rescue', 'retry', 'return',
+															'self', 'super',
+															'then', 'true',
+															'undef', 'unless', 'until',
+															'when', 'while',
+															'yield',
+														];
+		},
+				
+		# Symbol rules for built-in symbols
+
+		word-rule:
+		{
+			id                    : 'symbol.ruby.predef.words';
+			case-insensitive      : no;
+			words:                [ 
+															'require', 'load',
+															'$DEBUG', '$FILENAME', '$LOAD_PATH', '$VERBOSE',
+															'$stderr', '$stdin', '$stdout',
+														];
+		},
+				
+		regex-rule:
+		{
+			id                    : 'symbol.ruby.global';
+			case-insensitive      : no;
+			pattern               : @'\$\w+';
+		},
+
+		regex-rule:
+		{
+			id                    : 'symbol.ruby.global.predef';
+			case-insensitive      : no;
+			pattern               : @'\$.';
+		},
+
+		# Text literal rules for strings and characters
+		
+		text-literal-rule:
+		{
+			id                    : 'literal.string.ruby.double-quote';
+			open-sequence         : @'"';
+			close-sequence        : @'"';
+			escape-char           : @'\';
+			multiline							: no;
+			quoted-tokens         : yes;
+		},
+		
+		text-literal-rule:
+		{
+			id                    : 'literal.string.ruby.single-quote';
+			open-sequence         : @"'";
+			close-sequence        : @"'";
+			escape-char           : @'\';
+			multiline							: no;
+			quoted-tokens         : yes;
+		},
+
+		regex-rule:
+		{
+			id                    : 'literal.string.ruby.quote.bracket';
+			case-insensitive      : no;
+			pattern               : @'%[qQ]?\(.*?\)';
+		},
+
+		regex-rule:
+		{
+			id                    : 'literal.string.ruby.quote.square-bracket';
+			case-insensitive      : no;
+			pattern               : @'%[qQ]?[.*?]';
+		},
+
+		regex-rule:
+		{
+			id                    : 'literal.string.ruby.quote.curly-brace';
+			case-insensitive      : no;
+			pattern               : @'%[qQ]?{.*?}';
+		},
+
+		regex-rule:
+		{
+			id                    : 'literal.string.ruby.quote';
+			case-insensitive      : no;
+			pattern               : @'%[qQr]?(?<delimiter>\W).*?\k<delimiter>';
+		},
+
+		regex-rule:
+		{
+			id                    : 'literal.string.ruby.regex';
+			case-insensitive      : no;
+			pattern               : @'/.*?/\w?';
+		},
+
+		regex-rule:
+		{
+			id                    : 'literal.char.ruby';
+			case-insensitive      : no;
+			pattern               : @'\?\w';
+		},
+
+		# Rule for integral and non-integral numeric literals
+		
+		regex-rule:
+		{
+			id                    : 'literal.number.ruby';
+			case-insensitive      : no;
+			pattern               : @'((0x[\da-fA-F]+[lL]?)|((\d+)?\.(\d+)([eE]\d+)?[fF]?)|(\d+\.?(\d+([eE]\d+)?)?[fF]?))(?=\s|$|\W)';
+		},
+		
+		default-rule:
+		{
+		}
+	];
+};

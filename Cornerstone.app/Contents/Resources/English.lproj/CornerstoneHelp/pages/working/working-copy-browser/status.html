@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>	
+	<link href="../../../stylesheets/style.css" rel="stylesheet" media="all" />
+	<title>The Working Copy Browser Status Bar</title>
+	<style type="text/css">
+		table {
+			border-collapse: collapse;
+			font-size: 9pt;
+		}
+		td {
+			border: 1px solid #dfdfdf;
+			vertical-align: middle;
+			padding: 0.8em;
+		}
+		td+td {
+			width: 100%;
+		}
+	</style>
+</head>
+<body>
+	<div id="navbar">
+		<a id="home" href="index.html"></a>
+		<a id="next" href="moving.html"></a>
+	</div>
+
+	<h1>The Working Copy Browser Status Bar</h1>
+	<p>The status bar is located at the bottom of the browser:</p>
+	<p><img src="../../../images/status-bar.png"/></p>
+	
+	<h2>View Option Buttons</h2>
+	<p>The first button in the status bar controls visibility of the source list:</p>
+	<table>
+		<tr>
+			<td><img src="../../../images/hide-source-list.png"/></td>
+			<td>Hides (or shows) the source list to the left of the working copy browser. This is equivalent to toggling the <span class="uiref">View &gt; Show Source List</span> menu item (key equivalent <span class="key">⌥⌘S</span>)</td>
+		</tr>
+	</table>
+	<p>The next three buttons control which items are displayed in the browser:</p>
+	<table>
+		<tr>
+			<td><img src="../../../images/show-ignored.png"/></td>
+			<td>Show ignored files and folders. This is equivalent to toggling the <span class="uiref">View &gt; Show Ignored Items</span> menu item</td>
+		</tr>
+		<tr>
+			<td><img src="../../../images/show-repository-status.png"/></td>
+			<td>Show the repository status of the browser items. This is equivalent to toggling the <span class="uiref">View &gt; Show Repository Status</span> menu item
+				<div class="box note">
+					Enabling <span class="uiref">View &gt; Show Repository Status</span> will cause Cornerstone to contact the repository every time the working copy is committed, updated or refreshed in the browser. Depending on the location of your repository this can have a significant impact on browser performance.
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td><img src="../../../images/show-externals.png"/></td>
+			<td>Show the contents of external definitions. This is equivalent to toggling the <span class="uiref">View &gt; Show Contents of Externals</span> menu item
+				<div class="box note">
+					<p>Enabling expansion of large external directories can have a significant negative impact on browsing performance, especially when combined with <span class="uiref">View &gt; Show Repository Status</span></p>
+				</div>
+			</td>
+		</tr>
+	</table>
+	
+	<h2>Folder Revision</h2>
+	<p>The last update revision of the current folder is displayed in the status bar.</p>
+	<p><img src="../../../images/status-revision.png"/></p>
+
+	<h2>Working Copy Format</h2>
+	<p>The status bar also displays the format version of the working copy:</p>
+	<p><img src="../../../images/status-format.png"/></p>
+</body>
+</html>

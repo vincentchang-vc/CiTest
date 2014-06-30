@@ -1,0 +1,159 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>	
+	<link href="../../../stylesheets/style.css" rel="stylesheet" media="all" />
+	<title>Comparing File Versions</title>
+	<style type="text/css">
+		table {
+			border-collapse: collapse;
+			font-size: 9pt;
+		}
+		td {
+			border: 1px solid #dfdfdf;
+			vertical-align: top;
+			padding: 0.8em;
+		}
+		td+td+td {
+			width: 100%;
+		}
+	</style>
+</head>
+<body>
+	<div id="navbar">
+		<a id="home" href="../index.html"></a>
+		<a id="next" href="edit.html"></a>
+	</div>
+
+  <h1>Comparing Files</h1>
+  <p>Cornerstone contains built-in compare tools for reviewing changes before pushing them to or from the repository.</p>
+  
+  <div class="box note">
+		<p>For the sake of conciseness, this section makes extensive use of the terms <span class="term">BASE</span>, <span class="term">WORKING</span> and <span class="term">HEAD</span> to describes the various versions which can be compared.</p>
+		<p>See the <a href="../../introduction/terminology/revisions.html">Terminology</a> section for more information on these terms.</p>
+  </div>
+  
+  <h2>Comparing Against BASE</h2>
+  <p>To view the changes made to a file since the last update or commit:</p>
+  
+  <div class="box task">
+  	<ol>
+  		<li>Select the file you want to compare in the working copy browser.</li>
+  		<li>
+  			<p>Press the <span class="uiref">Compare With BASE</span> button in the view's toolbar to display the compare view (key equivalent <span class="key">⌘⏎</span>).</p>
+  			<p><img class="screenshot" src="../../../images/toolbar-compare-base.png"/></p>
+  		</li>
+  		<li>The modified file is compared against its BASE revisions. The BASE revision is displayed on the left.</li>
+  		<li>For text files, the diff view automatically scrolls down to reveal and select the first difference.</li>
+  	</ol>
+  </div>
+  
+  <h2>Comparing Against HEAD</h2>
+  <p>To compare the working version against the latest version in the repository (i.e. the HEAD version):</p>
+  
+  <div class="box task">
+  	<ol>
+  		<li>Select the file you want to compare in the working copy browser.</li>
+  		<li>Press the <span class="uiref">Compare with HEAD</span> button in the view's toolbar to display the compare view.</li>
+  			<p><img class="screenshot" src="../../../images/toolbar-compare-head.png"/></p>
+  		<li>The working version is compared against the HEAD version (with HEAD displayed on the right).</li>
+  		<li>For text files, the diff view automatically scrolls down to reveal and select the first difference.</li>
+  		<li>To compare BASE against HEAD, select <span class="uiref">Last Update (BASE)</span> from the popup menu in the left revision field.</li>
+  	</ol>
+  </div>
+  
+  <h2>Comparing Against Other Versions</h2>
+  <p>Once in a compare view, the left and right revision fields can be used to select both well-known revisions such as BASE, WORKING, HEAD and PREVIOUS and arbitrary revisions which can be specified by revision number or date.</p>
+  
+  <h2>Navigation</h2>
+  <p>When comparing two text files, the <span class="uiref">Compare</span> menu functions (<span class="uiref">Previous Difference</span> (<span class="key">⌘↑</span>), <span class="uiref">Next Difference</span> (<span class="key">⌘↓</span>) etc.) can be used to navigate between differences.</p>
+  <p>Alternatively, the previous and next change buttons in the compare view's vertical scroller can be used to jump between differences:</p>
+  <p><img class="screenshot" src="../../../images/compare-scroll-buttons.png"/></p>
+  <p>Holding down the <span class="key">Option</span> (⌥) key while clicking the previous and next buttons will jump to the first and last difference respectively.</p>
+
+  <h2>Text Selection</h2>
+  <p>To select text in the text compare view, click and drag using the mouse as usual with Mac OS X applications.</p>
+  <p>The following text selection shortcuts are also provided:</p>
+  <div class="box task">
+  	<ol>
+  		<li>Double-click to select an entire word.</li>
+  		<li>Triple-click to select an entire line.</li>
+  		<li>Double-click the interior border of a diff section to select all the text in that section:
+  			<p><img class="screenshot" src="../../../images/compare-section-handle.png"/></p>
+  		</li>
+  		<li>Select <span class="uiref">Edit &gt; Select All</span> (key equivalent <span class="key">⌘A</span>) to select all the text.</li>
+  		<li>When comparing two files, use <span class="uiref">Edit &gt; Select All</span> to select the text in the left file and the alternate menu function <span class="uiref">Edit &gt; Select All on Right Side</span> (key equivalent <span class="key">⌥⌘A</span>) to select all text in the right file.</li>
+  	</ol>
+  </div>
+  <p>See <a href="../menu-alternates.html">Alternate Menu Functions</a> for more information on alternate menu functions.</p>
+
+	<h2>Whitespace Comparison Options</h2>
+	<p>Cornerstone provides options controlling how files are compared and displayed by the compare view:</p>
+	<table>
+		<tr>
+			<td><img src="../../../images/compare-button-whitespace.png"/></td>
+			<td><span class="uiref">Compare &gt; Show Differences in Whitespace</span>
+			<p>When on, whitespace is compared in the same way as any other character.</p>
+			<p>When off, runs of whitespace characters (space and tab characters) are collapsed to a single space character before being compared.</p>
+				This option has no effect on how newline characters are compared.</td>
+		</tr>
+		<tr>
+			<td><img src="../../../images/compare-button-eolstyle.png"/></td>
+			<td><span class="uiref">Compare &gt; Show Differences in Line Endings</span>
+			<p>When on, newline characters are compared in the same way as any other character.</p>
+			<p>When off, differences in the style of line ending characters, e.g. when line endings have been changed from Unix style (LF) to Windows-style (CR/LF), are ignored.</p>
+		</tr>
+		<tr>
+			<td><img src="../../../images/compare-button-line-diffs.png"/></td>
+			<td><span class="uiref">Compare &gt; Show Line Differences</span>
+			<p>When on, differences between the left and right versions of a modification are highlighted.</p>
+			<p>Enabling line difference highlighting makes it much easier to visually detect minor changes between the left and right versions. Line difference highlighting is enabled by default.</p>
+		</tr>
+		<tr>
+			<td><img src="../../../images/compare-button-line-numbers.png"/></td>
+			<td><span class="uiref">Compare &gt; Show Line Numbers</span>
+			<p>When on, a gutter is displayed next to the text with numbers for each of the lines.</p>
+			<p>Line numbers are displayed by default.</p>
+		</tr>
+		<tr>
+			<td><img src="../../../images/compare-button-invisibles.png"/></td>
+			<td><span class="uiref">Compare &gt; Show Invisibles</span>
+			<p>When on, invisible characters such as spaces, tabs and newlines are shown. This can be useful when comparing whitespace-only changes to files.</p>
+			<p>Displaying invisibles exacts a minor penalty on rendering performance in the compare view. As a result the option is off by default.</p>
+		</tr>
+		<tr>
+			<td><img src="../../../images/compare-button-annotations.png"/></td>
+			<td><span class="uiref">Compare &gt; Show Annotations</span>
+			<p>When on, an additional annotation gutter is displayed displaying information on the file's authors. This is also known as <em>blame</em> information.</p>
+			<p>See the section on <a href="../annotations/index.html">annotations in the compare view</a> for more information.</p>
+		</tr>
+	</table>
+
+  <h2>Comparing Using an External Tool</h2>
+  <p>To compare BASE with WORKING:</p>
+  
+  <div class="box task">
+  	<ol>
+  		<li>Select the file you want to compare in the working copy browser.</li>
+  		<li>Select <span class="uiref">File &gt; Compare Using&hellip; &gt; Compare with Last Update</span> (key equivalent <span class="key">⇧⌘B</span>).</li>
+  		<li>Alternatively, hold down the <span class="key">Option</span> (⌥) key and click the <span class="uiref">Compare with BASE</span> button in the view's toolbar.</li>
+  		<li>This function is only available for files with local modifications.</li>
+  	</ol>
+  </div>
+  
+  <p>To compare WORKING with HEAD:</p>
+  
+  <div class="box task">
+  	<ol>
+  		<li>Select the file you want to compare in the working copy browser.</li>
+  		<li>Select <span class="uiref">File &gt; Compare Using&hellip; &gt; Compare with Latest in Repository</span> (key equivalent <span class="key">⇧⌘H</span>).</li>
+  		<li>Alternatively, hold down the <span class="key">Option</span> (⌥) key and click the <span class="uiref">Compare with HEAD</span> button in the view's toolbar.</li>
+  	</ol>
+  </div>
+  
+  <p>See <a href="../../integration/external-compare-tools.html">Using External Compare Tools</a> for more information on setting up external tools for use with Cornerstone.</p>
+
+</body>
+</html>

@@ -1,0 +1,195 @@
+{
+	id                        : 'cpp';
+	title                     : 'C/C++';
+	match:
+	[ 
+		uti											: 'public.c-header',
+		uti											: 'public.c-source', 
+		uti											: 'public.c-plus-plus-header', 
+		uti											: 'public.c-plus-plus-source',
+		extension								: 'pch',
+	];
+
+	rules: 
+	[
+		whitespace-rule:
+		{
+		},
+		
+		# Multi-line comment partition which includes SCM keywords
+		
+		multiline-rule:
+		{
+			id                		: 'comment.multiline.cpp';
+			open-sequence     		: @'/*';
+			close-sequence    		: @'*/';
+			capture-unclosed  		: yes;
+			
+			rules:
+			[
+				whitespace-rule:
+				{
+				},
+				
+				regex-rule:
+				{
+					id                : 'comment.keyword.scm.cpp';
+					case-insensitive  : no;
+					pattern           : @'\$(?<name>\w+)\:(?<value>.*)\s\$';
+					groups:
+					{
+						name            : 'comment.keyword.scm.name.cpp';
+						value           : 'comment.keyword.scm.value.cpp';
+					};
+				},
+				
+				default-rule:
+				{
+				},
+			];
+		},
+		
+		# End-of-line comment partition which includes SCM keywords
+		
+		eol-rule:
+		{
+			id										: 'comment.singleline.cpp';
+			open-sequence					:	@'//';
+
+			rules:
+			[
+				whitespace-rule:
+				{
+				},
+			
+				ref									: 'comment.keyword.scm.cpp',
+
+				default-rule:
+				{
+				},
+			];
+		},
+
+		# C/C++ keywords
+
+		word-rule:
+		{
+			id                    : 'keyword.cpp';
+			case-insensitive      : no;
+			words:                [ 
+															'asm', 'auto', 'bool', 'break', 'case', 'catch', 'char', 'class', 'const', 'const_cast', 'continue',
+															'default', 'delete', 'do', 'double', 'dynamic_cast', 'else', 'enum', 'explicit', 'export',
+															'extern', 'false', 'float', 'for', 'friend', 'goto', 'if', 'inline', 'int', 'long', 'mutable',
+															'namespace', 'new', 'operator', 'private', 'protected', 'public', 'register', 'reinterpret_cast',
+															'return', 'short', 'signed', 'sizeof', 'static', 'static_cast', 'struct', 'switch', 'template',
+															'this', 'throw', 'true', 'try', 'typedef', 'typeid', 'typename', 'union', 'unsigned', 'using',
+															'virtual', 'void', 'volatile', 'wchar_t', 'while'
+														];
+		},
+		
+		# C/C++ pre-processor keywords. Note that #include is not
+		# included here. It gets its own rule instead, as does #pragma.
+		
+		word-rule:
+		{
+			id                    : 'keyword.preprocessor.cpp';
+			case-insensitive      : no;
+			words:                [ 
+															'#define', '#elif', '#else', '#endif', '#error', '#if', '#ifdef', '#ifndef', '#line',
+															'#undef', '#using', '#assert', '#unassert', '#machine', '#machine'
+														];
+		},
+		
+		# Pre-defined, well-known pre-processor keywords
+		
+		word-rule:
+		{
+			id                    : 'symbol.preprocessor.cpp';
+			case-insensitive      : no;
+			words:                [ '__LINE__', '__FILE__', '__DATE__', '__TIME__', '__cplusplus', '__STDC__' ];
+		},
+		
+		# Rule for #include which matches square-bracketed system includes
+		# correctly using regular expression groups
+		
+		regex-rule:
+		{
+			id                    : 'keyword.preprocessor.include.cpp';
+			case-insensitive      : no;
+			pattern               : @'(?<keyword>(?:#include|#import))\s+(?<path>["<].*[">])';
+			groups:
+			{
+				keyword             : 'keyword.preprocessor.cpp';
+				path                : 'literal.string.preprocessor.include.cpp';
+			};
+		},
+		
+		# Rule for #pragma which matches the directive as well as the #pragma keyword
+		
+		eol-rule:
+		{
+			id										: 'keyword.preprocessor.pragma.cpp';
+			open-sequence					: '#pragma';
+		},
+
+		# Text literal rules for strings and characters
+		
+		text-literal-rule:
+		{
+			id                    : 'literal.string.cpp';
+			open-sequence         : @'"';
+			close-sequence        : @'"';
+			escape-char           : @'\';
+			multiline							: no;
+			quoted-tokens         : yes;
+		
+			rules:
+			[
+				whitespace-rule:
+				{
+				},
+				
+				regex-rule:
+				{
+					id                : 'symbol.cpp.escaped.character';
+					case-insensitive  : no;
+					pattern           : @'\\\w';
+				},
+
+				regex-rule:
+				{
+					id                : 'symbol.cpp.formatting.token';
+					case-insensitive  : no;
+					pattern						: @'%[\-+0 #]*[\d\*]?(\.\d+)?[hlLIw]?[cCdiouxXeEfgGaAnpsS%]';
+				},
+
+				default-rule:
+				{
+				},
+			];
+		},
+		
+		text-literal-rule:
+		{
+			id                    : 'literal.char.cpp';
+			open-sequence         : '\'';
+			close-sequence        : '\'';
+			escape-char           : @'\';
+			multi-line            : no;
+			quoted-tokens         : yes;
+		},
+		
+		# Rule for integral and non-integral numeric literals
+		
+		regex-rule:
+		{
+			id                    : 'literal.number.cpp';
+			case-insensitive      : no;
+			pattern               : @'((0x[\da-fA-F]+[lL]?)|((\d+)?\.(\d+)([eE]\d+)?[fF]?)|(\d+\.?(\d+([eE]\d+)?)?[fF]?))(?=\s|$|\W)';
+		},
+		
+		default-rule:
+		{
+		}
+	];
+};

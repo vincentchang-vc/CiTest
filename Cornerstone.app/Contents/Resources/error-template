@@ -1,0 +1,17 @@
+
+Description : <?= $description ?>
+ Suggestion : <?= $suggestion ?>
+ 
+Technical Information
+=====================
+
+      Error : <?= $error ?>
+  Exception : <?= $exception ?>
+
+Causal Information
+==================
+<? foreach ($cause in $causes) ?>
+Description : <?= $cause.message ?>
+     Status : <?= $cause.status ?><? if ($cause.line > 0) ?>
+       File : <?= $cause.file ?>, <?= $cause.line ?><? endif ?>
+<? endforeach ?>

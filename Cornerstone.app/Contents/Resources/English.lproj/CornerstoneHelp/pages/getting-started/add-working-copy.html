@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>	
+	<link href="../../stylesheets/style.css" rel="stylesheet" media="all" />
+	<title>Adding an Existing Working Copy</title>
+</head>
+<body>
+	<div id="navbar">
+		<a id="home" href="index.html"></a>
+		<a id="next" href="check-out-working-copy.html"></a>
+	</div>
+
+  <h1>Adding an Existing Working Copy</h1>
+  <p>If you already have Subversion working copies on your Mac then you need to add them to the source list in Cornerstone.</p>
+  <p>You can either drag the working copy folder from the Finder to Cornerstone's working copy source list or:</p>
+  
+  <div class="box task">
+  	<ol>
+  		<li>Select <span class="uiref">File &gt; Add Working Copy&hellip;</span> (or click the <img src="../../images/add-button.png"/> button located in the top right-hand corner of the working copy source list.)
+  		<p>You can also click the <span class="uiref">Add Working Copy...</span> button in the toolbar:</p>
+  		<p><img class="screenshot" src="../../images/toolbar-add-working-copy.png"/></p>
+  		</li>
+  		<li>Use the displayed panel to select one or more working copy folders.</li>
+  		<li>Enter a name into the <span class="uiref">Nickname</span> field. This will be used to represent the working copy in the source list and need not be the same as the folder's name.
+  			<div class="box note">
+  				<p>The <span class="uiref">Nickname</span> field is disabled when multiple folders are selected and the folders' names will be used as their nicknames.</p>
+  			</div>
+  		</li>
+  		<li>Click the <span class="uiref">Add</span> button to add the working copy to the source list.</li>
+  	</ol>
+  </div>
+  
+  <p>Cornerstone will automatically detect the version of your working copy and use the correct Subversion version when accessing it.</p>
+  
+  <div class="box note">
+  	<p>Note that Cornerstone will select the correct Subversion version to use when accessing your working copy. As a result the working copy will <em>not</em> automatically upgrade your 1.4 working copies to 1.5. Instead, to upgrade an existing 1.4 (or 1.5) working copy to 1.5 (or 1.6) format use the <span class="uiref">Working Copy &gt; Upgrade Working Copy&hellip;</span> function.</p>
+  	<p>If you get an error that your client software (i.e. Cornerstone) is too old then your working copy has not been upgraded completely. This can be solved by:</p>
+  	<ol>
+  		<li>Entering the following command into the Terminal:<pre>svn update /path/to/working/copy</pre> or:</li>
+  		<li>Downloading and running <a href="http://svn.collab.net/repos/svn/trunk/tools/client-side/change-svn-wc-format.py"><code>change-svn-wc-format.py</code></a> from the Subversion site and executing the following command in the terminal:<pre>change-svn-wc-format /path/to/working/copy 1.5</pre>
+  			<p>or</p>
+  			<p><pre>change-svn-wc-format /path/to/working/copy 1.6</pre></p>
+  			<p>depending on the desired target version.</p>
+  		</li>
+  	</ol>
+  	
+  </div>
+</body>
+</html>

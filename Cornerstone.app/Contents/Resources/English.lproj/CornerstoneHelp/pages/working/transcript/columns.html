@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>	
+	<link href="../../../stylesheets/style.css" rel="stylesheet" media="all" />
+	<title>Transcript View Columns</title>
+	<style type="text/css">
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			font-size: 9pt;
+		}
+		table td {
+			border: 1px solid #dfdfdf;
+			vertical-align: top;
+			padding: 0.4em;
+		}
+		td+td {
+			width: 100%;
+		}
+	</style>
+</head>
+<body>
+	<div id="navbar">
+		<a id="home" href="index.html"></a>
+		<a id="next" href="user-notes.html"></a>
+	</div>
+
+  <h1>Transcript View Columns</h1>
+  <p>Transcript entries are displayed in 6 columns:</p>
+  
+	<h2>Time</h2>
+	<p>The local system time when the entry was recorded.</p>
+
+	<h2>Status <img src="../../../images/status-column.png"/></h2>
+	<p>The status of the operation. This can be one of the following statuses:</p>
+	<table>
+		<tr>
+			<td><img src="../../../images/transcript-status-running.png"/></td>
+			<td>The operation is running</td>
+		</tr>
+		<tr>
+			<td><img src="../../../images/transcript-status-success.png"/></td>
+			<td>The operation completed successfully</td>
+		</tr>
+		<tr>
+			<td><img src="../../../images/transcript-status-error.png"/></td>
+			<td>The operation failed</td>
+		</tr>
+		<tr>
+			<td><img src="../../../images/transcript-status-user.png"/></td>
+			<td>The entry is a user note</td>
+		</tr>
+	</table>
+
+	<h2><a id="item-action">Item Action</a> <img src="../../../images/file-column.png"/></h2>
+	<p>The action performed on the file or folder during update and export operations.</p>
+	<p>This can be one of the following actions:</p>
+	<table>
+		<tr>
+			<td><img src="../../../images/update-marker-added.png"/></td>
+			<td>The item was added</td>
+		</tr>
+		<tr>
+			<td><img src="../../../images/update-marker-conflicted.png"/></td>
+			<td>Merging changes resulted in a conflict</td>
+		</tr>
+		<tr>
+			<td><img src="../../../images/update-marker-deleted.png"/></td>
+			<td>The item was deleted</td>
+		</tr>
+		<tr>
+			<td><img src="../../../images/update-marker-exists.png"/></td>
+			<td>The item already existed</td>
+		</tr>
+		<tr>
+			<td><img src="../../../images/update-marker-merged.png"/></td>
+			<td>Changes were merged without conflicts</td>
+		</tr>
+		<tr>
+			<td><img src="../../../images/update-marker-replaced.png"/></td>
+			<td>The item was replaced</td>
+		</tr>
+		<tr>
+			<td><img src="../../../images/update-marker-updated.png"/></td>
+			<td>The item was updated to a newer revision</td>
+		</tr>
+	</table>
+
+	<h2>Property Action <img src="../../../images/property-column.png"/></h2>
+	<p>The action performed on the item's properties. The possible actions are as for <a href="#item-action">item actions</a>.</p>
+
+	<h2>Lock Action <img src="../../../images/lock-column.png"/></h2>
+	<p>The action performed on the item's lock during update and export operations.</p>
+	<p>This can be one of the following actions:</p>
+	<table>
+		<tr>
+			<td><img src="../../../images/update-marker-broken.png"/></td>
+			<td>The lock was broken or stolen</td>
+		</tr>
+	</table>
+
+	<h2>Description</h2>
+	<p>Textual description of the operation performed.</p>
+  
+</body>
+</html>

@@ -1,0 +1,98 @@
+{
+	id                        : 'applescript';
+	title                     : 'AppleScript';
+	match:
+	[ 
+		uti											: 'com.apple.applescript.text',
+	];
+
+	rules: 
+	[
+		whitespace-rule:
+		{
+		},
+		
+		# Multi-line comment partition
+		
+		multiline-rule:
+		{
+			id                		: 'comment.multiline.applescript';
+			open-sequence     		: @'(*';
+			close-sequence    		: @'*)';
+			capture-unclosed  		: yes;
+		},
+		
+		# End-of-line comment partition
+		
+		eol-rule:
+		{
+			id										: 'comment.singleline.applescript';
+			open-sequence					:	@'--';
+		},
+
+		# Pre-Defined Variables/Functions/Symbols
+
+		word-rule:
+		{
+			id                    : 'symbol.applescript';
+			case-insensitive      : no;
+			words:                [ 
+															'access', 'application', 'close', 'count', 'eof', 'file', 'open', 'write',
+														];
+		},
+
+		# Keywords
+
+		word-rule:
+		{
+			id                    : 'keyword.applescript';
+			case-insensitive      : no;
+			words:                [ 
+															'after', 'and', 'as', 
+															'back', 'before', 'begin', 'beginning', 'begins', 'by',
+															'come', 'comes', 'considering', 'contain', 'contained', 'contains', 'copy',
+															'div', 'does', 'doesn\'t', 
+															'eighth', 'else', 'end', 'ends', 'equal', 'equals', 'error', 'exit', 
+															'false', 'fifth', 'first', 'fourth', 'from',
+															'given', 'get', 'global', 'greater', 
+															'if', 'ignoring', 'in', 'is', 'it', 
+															'less', 'local', 
+															'me', 'mod',
+															'named', 'ninth', 'not', 'not', 
+															'of', 'on', 'or', 
+															'pi', 'prop', 'properties', 'property',
+															'repeat', 'result', 'return',
+															'second', 'set', 'seventh', 'sixth', 'space', 'start', 'starts', 
+															'tab', 'tell', 'tenth', 'than', 'the', 'then', 'third', 'through', 'thru', 'timeout', 'to', 'transaction', 'true', 'try', 
+															'using',
+															'version', 
+															'with', 
+														];
+		},
+		
+		# Text literal rules for strings and characters
+		
+		text-literal-rule:
+		{
+			id                    : 'literal.string.applescript';
+			open-sequence         : @'"';
+			close-sequence        : @'"';
+			escape-char           : @'\';
+			multiline							: no;
+			quoted-tokens         : yes;
+		},
+		
+		# Rule for integral and non-integral numeric literals
+		
+		regex-rule:
+		{
+			id                    : 'literal.number.applescript';
+			case-insensitive      : no;
+			pattern               : @'((0x[\da-fA-F]+[lL]?)|((\d+)?\.(\d+)([eE]\d+)?[fF]?)|(\d+\.?(\d+([eE]\d+)?)?[fF]?))(?=\s|$|\W)';
+		},
+		
+		default-rule:
+		{
+		}
+	];
+};

@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>	
+	<link href="../../../stylesheets/style.css" rel="stylesheet" media="all" />
+	<title>The Externals Editor</title>
+	<style type="text/css">
+	</style>
+</head>
+<body>
+	<div id="navbar">
+		<a id="home" href="../index.html"></a>
+		<a id="next" href="list-view.html"></a>
+	</div>
+
+  <h1>The Externals Editor</h1>
+  <p>Externals are edited in a document-centric fashion.</p>
+  <p>Each <code>svn:externals</code> property is opened as a new document in its own window and changes are buffered in memory until the user is ready to save them to disk using the <span class="uiref">File &gt; Save</span> command (key equivalent <span class="key">⌘S</span>).</p>
+  <p>Changes in an externals editor can be reverted to the version on disk using the <span class="uiref">File &gt; Revert to Saved</span> function (key equivalent <span class="key">⌘U</span>) at any time.</p>
+  <p>The externals editor provides two interfaces for editing a folder's external definitions:</p>
+  
+	<h2>The Definition List View</h2>
+	<p>The definition list view displays the folder's external definitions as a vertical list of definitions, with a form provided for editing the contents of each external definition.</p>
+	<p>The definition list is activated by clicking the corresponding button in the editor's toolbar:</p>
+	<p><img class="screenshot" src="../../../images/toolbar-externals-list.png"/></p>
+	<p>The definition list is activated by default.</p>
+	
+	<h3>Topics</h3>
+	<p><a href="list-view.html">Editing Externals with the Definition List View</a></p>
+
+	<h2>The Property Text View</h2>
+	<p>The property text view shows the raw text contents of the <code>svn:externals</code> property.</p>
+	<p>You can use this view to directly edit the property's text if you are familiar with the <code>svn:externals</code> syntax and need to perform editing operations not supported by the definition list.</p>
+	<p>The property list is activated by clicking the corresponding button in the editor's toolbar.</p>
+	<p><img class="screenshot" src="../../../images/toolbar-externals-text.png"/></p>
+  
+  <h3>Topics</h3>
+  <p><a href="text-view.html">Editing Externals with the Property Text View</a></p>
+  
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>	
+	<link href="../../../stylesheets/style.css" rel="stylesheet" media="all" />
+	<title>Information Tab</title>
+	<style type="text/css">
+		table {
+			border-collapse: collapse;
+			border: 1px solid #dfdfdf;
+			vertical-align: top;
+			padding: 0.4em;
+		}
+		td {
+			vertical-align: top;
+			border: 1px solid #dfdfdf;
+			padding: 0.4em;
+		}
+		h3 {
+			margin-bottom: 0px;
+		}
+		h3 + p {
+			margin-top: 0.3em;
+		}
+	</style>
+</head>
+<body>
+	<div id="navbar">
+		<a id="home" href="index.html"></a>
+		<a id="next" href="properties.html"></a>
+	</div>
+
+  <h1>Information Tab</h1>
+  <p>The inspector's information tab displays information about the files and folders selected in the active browser. The information is split into the following selections:</p>
+  
+  <h2>General</h2>
+  <h3>Size</h3>
+  <p>The size, in bytes, of the file in the file system.</p>
+  
+  <h3>Where</h3>
+  <p>The location of the item in the file system. Point at the field to reveal a tool-tip with the item's full path.</p>
+  
+  <h3>Modified</h3>
+  <p>The last modification date of the item.</p>
+  <p>For modified files this date is the file's last modification date in the file system. For unmodified files this is the date the file's BASE revision was committed.</p>
+  
+  <h3>Committed</h3>
+  <p>The date at which the item's BASE revision was committed.</p>
+  
+  <h3>Author</h3>
+  <p>The name of the person who committed the item's BASE revision. This field will be empty when repository access is anonymous.</p>
+  
+  <h2>Lock</h2>
+  <h3>Status</h3>
+  <p>The status of the file's lock. One of:</p>
+	<table>
+		<tr>
+			<td><span class="uiref">Unlocked</span></td>
+			<td>The file is unlocked</td>
+		</tr>
+		<tr>
+			<td><span class="uiref">Locked</span></td>
+			<td>The file is locked by another user</td>
+		</tr>
+		<tr>
+			<td><span class="uiref">Owned</span></td>
+			<td>The file is locked and the lock is owned by this working copy</td>
+		</tr>
+		<tr>
+			<td><span class="uiref">Broken</span></td>
+			<td>The file was locked by this working copy but has since been unlocked by another user. The file is currently unlocked</td>
+		</tr>
+		<tr>
+			<td><span class="uiref">Stolen</span></td>
+			<td>The file was locked by this working copy but has since been locked by another user. The file is currently locked.</td>
+		</tr>
+	</table>
+	
+  <h3>Owner</h3>
+  <p>The name of the user that owns the lock.</p>
+  
+  <h3>Created</h3>
+  <p>The date when the lock was created.</p>
+  
+  <h3>Expired</h3>
+  <p>The date when the lock will expire.</p>
+  
+  <h3>Token</h3>
+  <p>The unique token of the lock.</p>
+  
+  <h3>Comment</h3>
+  <p>The comment given by the user that created the lock. Point at the field to reveal a tool-tip with the complete comment text.</p>
+  
+  <h2>Working Copy Status</h2>
+  <h3>Text</h3>
+  <p>The status of the file's contents.</p>
+  
+  <h3>Properties</h3>
+  <p>The status of the file's (or folder's) properties.</p>
+  
+  <h3>Checksum</h3>
+  <p>The checksum for the file's contents. Subversion uses this field to determine whether the file's contents have changed.</p>
+  
+  <h3>Depth</h3>
+  <p>The currently configured depth of the working copy folder. One of:</p>
+  <table>
+  	<tr>
+  		<td><span class="uiref">All files and folders at all levels</span></td>
+  		<td><img src="../../../images/depth-infinity.png"/></td>
+  		<td>The folder will automatically retrieve all files and folders at all levels when updated.</td>
+  	</tr>
+  	<tr>
+  		<td><span class="uiref">Immediate files and folders only</span></td>
+  		<td><img src="../../../images/depth-immediates.png"/></td>
+  		<td>Changes to files and folders located immediately within the selected folder will be obtained during updates. New folders will be retrieved but their contents will not.</td>
+  	</tr>
+  	<tr>
+  		<td><span class="uiref">Immediate files only</span></td>
+  		<td><img src="../../../images/depth-files.png"/></td>
+  		<td>Only new and changed files located immediately within the folder will be retrieved.</td>
+  	</tr>
+  	<tr>
+  		<td><span class="uiref">Folder only (i.e. no contents)</span></td>
+  		<td><img src="../../../images/depth-empty.png"/></td>
+  		<td>The folder is an empty placeholder. No contents will be retrieved on update until the folder's depth is changed.</td>
+  	</tr>
+  </table>
+  
+  <h2>Repository Status</h2>
+  <p>This section displays the status of the item in the repository. This information is only available if the <span class="uiref">View &gt; Show Repository Status</span> is enabled.</p>
+  
+  <h3>Repository</h3>
+  <p>The URL of the item's repository. Point at the field to reveal a tool-tip with the complete URL.</p>
+  
+  <h3>Where</h3>
+  <p>The location of the item in the repository displayed as a path relative to the repository. Point at the field to reveal the location's full URL.</p>
+
+  <h3>Text</h3>
+  <p>The status of the file's contents.</p>
+  
+  <h3>Properties</h3>
+  <p>The status of the file's (or folder's) properties.</p>
+
+	<h3>Revision</h3>
+	<p>The latest revision in the repository.</p>
+	
+	<h3>Date</h3>
+	<p>The date when the latest revision was committed.</p>
+	
+	<h3>Author</h3>
+	<p>The name of the author who committed the latest revision. This field will be empty if the user connected to the repository anonymously.</p>
+	
+	<h2>Last Up-to-Date</h2>
+	<h3>Text</h3>
+	<p>The date when the file's contents were last up-to-date with the HEAD revision in the repository, i.e. the date when the file was last updated or committed.</p>
+	
+	<h3>Properties</h3>
+	<p>The date when the file's (or folder's) properties were last up-to-date with the HEAD revision in the repository, i.e. the date when the item was last updated or committed.</p>
+	
+	<h2>Open With</h2>
+	<p>Select the application which should be used as the external editor for the selected item(s). The external editor is opened when an item is double-clicked in the working copy browser view.</p>
+	<p>Click the <span class="uiref">Change All...</span> button to use the application as the default external editor for all items of the selected type.</p>
+	
+</body>
+</html>

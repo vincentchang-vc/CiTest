@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>	
+	<link href="../../stylesheets/style.css" rel="stylesheet" media="all" />
+	<title>The Commit View</title>
+</head>
+<body>
+	<div id="navbar">
+		<a id="home" href="index.html"></a>
+		<a id="next" href="switching.html"></a>
+	</div>
+
+	<h1>The Commit View</h1>
+  <p>The commit view allows you to review the changes being committed and provide a message describing the changes which will be visible in the repository's log to other members of the team:</p>
+	<p><img class="screenshot" src="../../images/commit-view.png"/></p>
+  
+  <div class="box note">
+		<p>No files are committed to the repository until the <span class="uiref">Commit Changes</span> button is pressed.</p>
+  	<p><strong>You cannot easily change the message text after the commit has completed, so take the time to review the text before continuing.</strong></p>
+  	<p>For this reason it's probably best not to use log messages as a platform for sounding off on your feelings about your boss or other team members!</p>
+  </div>
+  
+  <p>With the commit view displayed:</p>
+  
+  <div class="box task">
+  	<ol>
+  		<li>
+  			<p>Review the changes made by comparing the modified files against their BASE revisions by clicking the arrow <img src="../../images/compare-arrow.png"/> to the right of the filename.</p>
+  		</li>
+  		<li>Include and exclude files from the change list by clicking on the checkboxes in the left-most column (all files are included by default).
+  		<p>Use the items on the contextual menu to include or exclude sets of files.</p>
+  		<div class="box note">
+	  		<p>By default, including/excluding a folder does not recursively include/exclude its contents. This behavior can be changed by holding the <span class="key">Option</span> (⌥) key while clicking the folder's check button.</p>
+  		</div>
+  		</li>
+  		<li>
+  			<p>Type a message into the log message field which describes the changes being committed.</p>
+  			<p>Use the <span class="key">Return</span> (⏎) key to enter a newline into the message field (<span class="key">Return</span> (⏎) does not close the view).</p>
+  		</li>
+  		<li>
+  			<p>Alternatively, use the log picker to select a message from the repository's log by clicking the button:</p>
+  			<p><img src="../../images/commit-revision-picker-button.png"/></p>
+  		</li>
+  		<li>Optionally select the pre- and post-commit scripts to run during the commit. See the <a href="../integration/commit-actions/index.html">Running Commit Actions</a> article in the <a href="../integration/index.html">Integration</a> section for more information.</li>
+  		<li>
+  			<p>Click the <span class="uiref">Commit Changes</span> button to commit the changes to the repository.</p>
+  			<p>Alternatively, press the <span class="key">⌘T</span> key combination.</p>
+  		</li>
+  		<li>Press <span class="uiref">Cancel</span> (key equivalent <span class="key">Escape</span> ⎋) to cancel the commit. If you have already entered a log message then the message is retained and used as the default for the next commit operation.</li>
+  	</ol>
+  </div>
+
+</body>
+</html>

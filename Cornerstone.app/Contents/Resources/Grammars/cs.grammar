@@ -1,0 +1,211 @@
+{
+	id                        : 'cs';
+	title                     : 'C#';
+	match:
+	[
+		extension								: 'cs',
+	];
+
+	rules: 
+	[
+		whitespace-rule:
+		{
+		},
+		
+		# Multi-line comment partition which includes SCM keywords
+		
+		multiline-rule:
+		{
+			id                		: 'comment.multiline.cs';
+			open-sequence     		: @'/*';
+			close-sequence    		: @'*/';
+			capture-unclosed  		: yes;
+			
+			rules:
+			[
+				whitespace-rule:
+				{
+				},
+				
+				regex-rule:
+				{
+					id                : 'comment.keyword.scm.cs';
+					case-insensitive  : no;
+					pattern           : @'\$(?<name>\w+)\:(?<value>.*)\s\$';
+					groups:
+					{
+						name            : 'comment.keyword.scm.name.cs';
+						value           : 'comment.keyword.scm.value.cs';
+					};
+				},
+				
+				default-rule:
+				{
+				},
+			];
+		},
+		
+		# End-of-line doc-comment partition which includes SCM keywords
+		
+		eol-rule:
+		{
+			id										: 'comment.singleline.cs.doc';
+			open-sequence					:	@'///';
+
+			rules:
+			[
+				whitespace-rule:
+				{
+				},
+			
+				ref									: 'comment.keyword.scm.cs',
+				
+				regex-rule:
+				{
+					id								: 'exterior.cs.doc.xml.element';
+					pattern						: @'</?\w+\s*(\w+\s*=\s*["].*?["])*/?>';
+				},
+
+				default-rule:
+				{
+				},
+			];
+		},
+
+		# End-of-line comment partition which includes SCM keywords
+		
+		eol-rule:
+		{
+			id										: 'comment.singleline.cs';
+			open-sequence					:	@'//';
+
+			rules:
+			[
+				whitespace-rule:
+				{
+				},
+			
+				ref									: 'comment.keyword.scm.cs',
+
+				default-rule:
+				{
+				},
+			];
+		},
+
+		# C# keywords
+
+		word-rule:
+		{
+			id                    : 'keyword.cs';
+			case-insensitive      : no;
+			words:                [ 
+															'abstract', 'as',
+															'base', 'bool', 'break', 'byte',
+															'case', 'catch', 'char', 'checked', 'class', 'const', 'continue',
+															'decimal', 'default', 'delegate', 'do', 'double',
+															'else', 'enum', 'event', 'explicit', 'extern', 'false', 'finally', 'fixed', 'float', 'for', 'foreach',
+															'get', 'goto',
+															'if', 'implicit', 'in', 'int', 'interface', 'internal', 'is',
+															'lock', 'long',
+															'namespace', 'new', 'null',
+															'object', 'operator', 'out', 'override',
+															'params', 'private', 'protected', 'public',
+															'readonly', 'ref', 'return',
+															'sbyte', 'sealed', 'set', 'short', 'sizeof', 'stackalloc', 'static', 'string', 'struct', 'switch',
+															'this', 'throw', 'true', 'try', 'typeof',
+															'uint', 'ulong', 'unchecked', 'unsafe', 'ushort', 'using',
+															'virtual', 'volatile', 'void', 'while',
+														];
+		},
+		
+		regex-rule:
+		{
+			id										: 'keyword.preprocessor.cs';
+			pattern								: @'#(if|else|elif|endif|define|undef|warning|error|line|region|endregion).*';
+		},
+				
+		# Text literal rules for strings and characters
+		
+		text-literal-rule:
+		{
+			id                    : 'literal.string.cs';
+			open-sequence         : @'"';
+			close-sequence        : @'"';
+			escape-char           : @'\';
+			multiline							: no;
+			quoted-tokens         : yes;
+			
+			rules:
+			[
+				whitespace-rule:
+				{
+				},
+				
+				regex-rule:
+				{
+					id								: 'symbol.cs.formatting.placeholder';
+					pattern						: @'\{\d+\}';
+				},
+				
+				regex-rule:
+				{
+					id								: 'symbol.cs.formatting.token';
+					pattern						: @'\\.';
+				},
+				
+				default-rule:
+				{
+					
+				},
+			];
+		},
+		
+		text-literal-rule:
+		{
+			id                    : 'literal.string.cs.verbatim';
+			open-sequence         : @'@"';
+			close-sequence        : @'"';
+			escape-char           : @'\';
+			multiline							: no;
+			quoted-tokens         : yes;
+		
+			rules:
+			[
+				whitespace-rule:
+				{
+				},
+				
+				ref									: 'symbol.cs.formatting.placeholder',
+				
+				default-rule:
+				{
+					
+				},
+			];
+		},
+
+		text-literal-rule:
+		{
+			id                    : 'literal.char.cs';
+			open-sequence         : '\'';
+			close-sequence        : '\'';
+			escape-char           : @'\';
+			multi-line            : no;
+			quoted-tokens         : yes;
+		},
+		
+		# Rule for integral and non-integral numeric literals
+		
+		regex-rule:
+		{
+			id                    : 'literal.number.cs';
+			case-insensitive      : no;
+			pattern               : @'((0x[\da-fA-F]+[lL]?)|((\d+)?\.(\d+)([eE]\d+)?[fF]?)|(\d+\.?(\d+([eE]\d+)?)?[fF]?))(?=\s|$|\W)';
+		},
+		
+		default-rule:
+		{
+		}
+	];
+};

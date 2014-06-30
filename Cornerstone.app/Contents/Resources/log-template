@@ -1,0 +1,8 @@
+<? foreach ($item in $items) ?><? if ($items.@count > 1) ?>------------------------------------------------------------------------
+<? endif ?>r<?= $item.revision ?> | <? if ($item.author != null) ?><?= $item.author ?> | <? endif ?><?= $item.date ?> | <? $lines = linesInString($item.message) ?><?= $lines ?> line<? if ($lines != 1) ?>s<? endif ?>
+<? if ($options.includeChanges == true) ?>Changed paths:
+<? foreach ($change in sort($item.changes, "path")) ?>   <?= $change.action ?> <?= $change.path ?><? if ($change.copyPath != null) ?> (from <?= $change.copyPath ?>:<?= $change.copyRevision ?>)<? endif ?>
+<? endforeach ?>
+<? endif ?><?= $item.message ?><? if ($items.@count > 1) ?>
+<? endif ?>
+<? endforeach ?>

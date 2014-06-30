@@ -1,0 +1,252 @@
+{
+	id                        : 'php';
+	title                     : 'PHP';
+	default-token-class				: 'exterior';
+	match:
+	[ 
+		extension								: 'php',
+	];
+
+	rules: 
+	[
+		whitespace-rule:
+		{
+		},
+		
+		# Multi-line partition for <?php ... ?> and <? ... ?> blocks
+
+		regex-rule:
+		{
+			id                		: 'default.php.block';
+			pattern								: @'<\?(php)?';
+			until									: @'default.php.block.end';
+			
+			rules:
+			[
+				whitespace-rule:
+				{
+				},
+				
+				# Rule which matches end of block
+				
+				regex-rule:
+				{
+					id								: 'default.php.block.end';
+					pattern						: @'\?>';	
+				},
+
+				# Multi-line comment partition which includes SCM keywords
+
+				multiline-rule:
+				{
+					id                		: 'comment.multiline.php';
+					open-sequence     		: @'/*';
+					close-sequence    		: @'*/';
+					capture-unclosed  		: yes;
+
+					rules:
+					[
+						whitespace-rule:
+						{
+						},
+
+						regex-rule:
+						{
+							id                : 'comment.keyword.scm.php';
+							case-insensitive  : no;
+							pattern           : @'\$(?<name>\w+)\:(?<value>.*)\s\$';
+							groups:
+							{
+								name            : 'comment.keyword.scm.name.php';
+								value           : 'comment.keyword.scm.value.php';
+							};
+						},
+
+						default-rule:
+						{
+						},
+					];
+				},
+
+				# End-of-line comment partition which includes SCM keywords
+
+				eol-rule:
+				{
+					id										: 'comment.singleline.php';
+					open-sequence					:	@'//';
+
+					rules:
+					[
+						whitespace-rule:
+						{
+						},
+
+						ref									: 'comment.keyword.scm.php',
+
+						default-rule:
+						{
+						},
+					];
+				},
+
+				# End-of-line comment partition which includes SCM keywords
+
+				eol-rule:
+				{
+					id										: 'comment.singleline.php.hash';
+					open-sequence					:	@'#';
+
+					rules:
+					[
+						whitespace-rule:
+						{
+						},
+
+						ref									: 'comment.keyword.scm.php',
+
+						default-rule:
+						{
+						},
+					];
+				},
+				
+				regex-rule:
+				{
+					id										: 'symbol.php';
+					pattern								: @'\$\w+';
+				},
+
+				# PHP keywords
+
+				word-rule:
+				{
+					id                    : 'keyword.php';
+					case-insensitive      : no;
+					words:                [ 
+																	'abstract', 'and', 'as',
+																	'break',
+																	'case', 'catch', 'cfunction', 'class', 'clone', 'const', 'continue',
+																	'declare', 'default', 'do',
+																	'else', 'elseif', 'enddeclare', 'endfor', 'endforeach', 'endif', 'endswitch', 'endwhile', 'extends', 'exception',
+																	'final', 'for', 'foreach', 'function', 
+																	'global',
+																	'if',
+																	'implements', 'interface',
+																	'new', 
+																	'old_function', 'or',
+																	'php_user_filter', 'private', 'protected', 'public', 
+																	'return',
+																	'static', 'switch',
+																	'throw', 'try',
+																	'use',
+																	'var',
+																	'while',
+																	'xor',
+																];
+				},
+
+				word-rule:
+				{
+					id                    : 'keyword.php.case-insensitive';
+					case-insensitive      : no;
+					words:                [ 'true', 'false', 'null' ];
+				},
+
+				word-rule:
+				{
+					id                    : 'symbol.php.predefined';
+					case-insensitive      : no;
+					words:                [ 
+																	'array',
+																	'__CLASS__',
+																	'define','die',
+																	'echo', 'eval', 'exit', 
+																	'__FILE__', '__FUNCTION__', 
+																	'include', 'include_once', 'isset', 'list',
+																	'__LINE__',
+																	'__METHOD__',
+																	 'print',
+																	'require', 'require_once', 
+																	'unset',
+																];
+				},
+
+				# Text literal rules for strings and characters
+
+				text-literal-rule:
+				{
+					id                    : 'literal.string.php.singlequote';
+					open-sequence         : @"'";
+					close-sequence        : @"'";
+					escape-char           : @'\';
+					multiline							: yes;
+					quoted-tokens         : yes;
+				},
+
+				text-literal-rule:
+				{
+					id                    : 'literal.string.php.doublequote';
+					open-sequence         : @'"';
+					close-sequence        : @'"';
+					escape-char           : @'\';
+					multiline							: yes;
+					quoted-tokens         : yes;
+					
+					rules:
+					[
+						whitespace-rule:
+						{
+						},
+
+						regex-rule:
+						{
+							id										: 'symbol.php.quoted';
+							pattern								: @'\$\w+(->\w+)?';
+						},
+
+						default-rule:
+						{
+						},
+					];
+				},
+
+				regex-rule:
+				{
+					id                    : 'literal.string.php.heredoc';
+					pattern								: @'<<<(?<delimiter>\w+).*?\k<delimiter>';
+					multiline							: yes;
+					
+					rules:
+					[
+						whitespace-rule:
+						{
+						},
+
+						ref									: 'symbol.php.quoted',
+
+						default-rule:
+						{
+						},
+					];
+				},
+
+				# Rule for integral and non-integral numeric literals
+
+				regex-rule:
+				{
+					id                    : 'literal.number.php';
+					case-insensitive      : no;
+					pattern               : @'((0x[\da-fA-F]+[lL]?)|((\d+)?\.(\d+)([eE]\d+)?[fF]?)|(\d+\.?(\d+([eE]\d+)?)?[fF]?))(?=\s|$|\W)';
+				},
+
+				default-rule:
+				{
+				},
+			];
+		},
+
+		default-rule:
+		{
+		},
+	];
+};

@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>	
+	<link href="../../stylesheets/style.css" rel="stylesheet" media="all" />
+	<title>Checking Out a Working Copy</title>
+</head>
+<body>
+	<div id="navbar">
+		<a id="home" href="index.html"></a>
+	</div>
+
+  <h1>Checking Out a Working Copy</h1>
+  <p>You will need to add your repository to Cornerstone before you can check out a working copy.</p>
+  
+  <div class="box task">
+  	<ol>
+  		<li>Select the repository in the source list that contains the files you want to check out.</li>
+  		<li>Browse the repository and locate the top-level folder which contains your project's files. This may be the project's trunk or a folder on a branch.</li>
+  		<li>Select <span class="uiref">Working Copy &gt; Check Out Working Copy&hellip;</span> or select <span class="uiref">Check Out Working Copy&hellip;</span> from the folder's right-click menu.
+  			<p>You can also click the <span class="uiref">Check Out</span> button in the toolbar:</p>
+  			<p><img class="screenshot" src="../../images/toolbar-check-out.png"/></p>
+  		</li>
+  		<li>Use the field labelled <span class="uiref">Check Out As</span> to specify the name of the working copy directory.</li>
+  		<li>Use the <span class="uiref">Where</span> popup menu to select the folder in which the working copy will be located.</li>
+  		<li>Select <span class="uiref">Open in Finder</span> from the <span class="uiref">When Complete</span> popup menu to have Finder open the working copy's folder when the check out is complete.</li>
+  		<li>Click <span class="uiref">Check Out</span> to check out the working copy.</li>
+  	</ol>
+  </div>
+  
+  <p>The check out sheet also contains a set of more advanced options:</p>
+  
+  <div class="box task">
+  	<ul>
+  		<li>Use the <span class="uiref">Revision</span> field to select the revision to check out. This field defaults to HEAD, i.e. the latest revision in the repository.</li>
+  		<li>
+  			<p>Use the <span class="uiref">Format</span> field to select whether the working copy format used is 1.4, 1.5 or 1.6.</p>
+  			<p>This field defaults to 1.4 on Mac OS X 10.5 Leopard and 1.6 on Mac OS X 10.6 Snow Leopard for maximum compatibility with the version of Subversion pre-installed with Mac OS X.</p>
+  			<div class="box note">
+  				<p>The 1.6 format must be used when accessing a 1.6-format repository using the <code>file://</code> protocol.</p>
+  			</div>
+  		</li>
+  		<li>
+				<p>The check out depth may be selected using the <span class="uiref">Depth</span> field.</p>
+				<div class="box note">
+					<p>For 1.4 working copies the depth popup menu is limited to <span class="uiref">All files and folders at all levels</span> (i.e. recursive) or <span class="uiref">Immediate files only</span> (i.e. non-recursive.</p>
+					<p>All standard check out depths are available when checking out a 1.5 or newer format working copy.</p>
+				</div>
+  		</li>
+  		<li>Uncheck <span class="uiref">Check out content from external definitions</span> if you want to exclude the content of externals from the check out.</li>
+  	</ul>
+  </div>
+  
+  <div class="box note">
+  	<p>If you encounter the error message <em>Unable to contact repository at &lt;server&gt;</em> when checking out a project even though the check out process appeared to complete successfully, check that repositories referenced by <code>svn:externals</code> can be reached and that the URLs are correct.</p>
+  	<p>This error is particularly likely if you are using a local repository and then attempt to check out a project with external references to a public repository on the Internet when you do not have Internet access.</p>
+  </div>
+</body>
+</html>

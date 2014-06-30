@@ -1,0 +1,322 @@
+{
+	id                        : 'html';
+	title                     : 'HTML';
+	match:
+	[ 
+		uti											: 'public.html',
+		uti											: 'public.xhtml',
+	];
+	import:										[ 'ecmascript', 'css' ];
+
+	rules: 
+	[
+		whitespace-rule:
+		{
+		},
+		
+		# Partition rule for <script type="text/javascript"> and <script language="javascript"> blocks
+
+		regex-rule:
+		{
+			id										: 'default.html.block.script.js';
+			pattern								: '<\\s*script[^>]*?((type\\s*=\\s*[\'"]text/javascript[\'"])|(language\\s*=\\s*[\'"]javascript[\'"])).*?>';
+			multiline							: yes;
+			case-insensitive			: yes;
+			until									: 'symbol.html.script.js.element.end';
+			
+			rules:
+			[
+				whitespace-rule:
+				{
+				},
+				
+				regex-rule:
+				{
+					id								: 'default.html.script.js.element.open';
+					pattern						: '<\\s*script.*?>';
+					case-insensitive	: yes;
+					multiline					: yes;
+					
+					rules:
+					[
+						whitespace-rule:
+						{
+						},
+						
+						regex-rule:
+						{
+							id						: 'symbol.html.script.js.element.open';
+							pattern				: @'<\s*script';
+							case-insensitive: yes;
+						},
+						
+						regex-rule:
+						{
+							id						: 'symbol.html.script.js.element.open.bracket';
+							pattern				: '>';
+						},
+
+						regex-rule:
+						{
+							id						: 'default.html.script.js.element.open.attr';
+							pattern				: '(?<name>\\w+)\\s*=\\s*(?<value>[\'"].*?[\'"])';
+							
+							groups:
+							{
+								name				: 'symbol.html.script.js.element.open.attr.name';
+								value				: 'literal.string.html.script.js.element.open.attr.value';
+							};
+						},
+
+						default-rule:
+						{
+						},
+					];
+				},
+				
+				regex-rule:
+				{
+					id								: 'symbol.html.script.js.element.end';
+					pattern						: @'<\s*/script\s*>';
+					case-insensitive	: yes;
+				},
+				
+				regex-rule:
+				{
+					id								: 'comment.html.script.js.tag.open';
+					pattern						: @'<!--';
+				},
+				
+				regex-rule:
+				{
+					id								: 'comment.html.script.js.tag.close';
+					pattern						: @'-->';
+				},
+
+				ref									: 'comment.multiline.js',
+				ref									: 'comment.singleline.js',
+				ref									: 'keyword.js',
+				ref									: 'keyword.js.reserved',
+				ref									: 'symbol.js',
+				ref									: 'default.string.regex.js',
+				ref									: 'literal.string.js.double-quote',
+				ref									: 'literal.string.js.single-quote',
+				ref									: 'literal.number.js',
+				
+				default-rule:
+				{
+				},
+			];
+		},
+		
+		# Partition rule for <style> and <style type="text/css"> blocks
+		
+		regex-rule:
+		{
+			id										: 'default.html.block.style.css';
+			pattern								: '<\\s*style\\s*((.*?type\\s*=\\s*[\'"]text/css[\'"].*?>)|(>))';
+			case-insensitive			: yes;
+			until									: 'symbol.html.block.style.end';
+			
+			rules:
+			[
+	      whitespace-rule:
+	      {
+	      },
+	
+				regex-rule:
+				{
+					id								: 'default.html.style.cs.element.open';
+					pattern						: '<\\s*style.*?>';
+					case-insensitive	: yes;
+					multiline					: yes;
+					
+					rules:
+					[
+						whitespace-rule:
+						{
+						},
+						
+						regex-rule:
+						{
+							id						: 'symbol.html.style.css.element.open';
+							pattern				: @'<\s*style';
+							case-insensitive: yes;
+						},
+						
+						regex-rule:
+						{
+							id						: 'symbol.html.style.css.element.open.bracket';
+							pattern				: '>';
+						},
+
+						regex-rule:
+						{
+							id						: 'default.html.style.css.element.open.attr';
+							pattern				: '(?<name>\\w+)\\s*=\\s*(?<value>[\'"].*?[\'"])';
+							
+							groups:
+							{
+								name				: 'symbol.html.style.css.element.open.attr.name';
+								value				: 'literal.string.html.style.css.element.open.attr.value';
+							};
+						},
+
+						default-rule:
+						{
+						},
+					];
+				},
+	
+				ref									: 'keyword.preprocessor.css.import',
+				ref									: 'comment.multiline.css',
+				ref									: 'comment.singleline.css',
+				ref									: 'literal.string.css.double-quotes',
+				ref									: 'literal.string.css.single-quotes',
+				ref									: 'default.css.style',
+				ref									: 'symbol.css.selector',
+				ref									: 'literal.number.css',
+	
+				regex-rule:
+				{
+					id								: 'symbol.html.block.style.end';
+					pattern						: @'<\s*/style\s*>';
+					case-insensitive	: yes;
+				},
+	
+        default-rule:
+        {
+        },
+			];
+		},
+
+    regex-rule:
+    {
+      id                    : 'symbol.html.element.open';
+      pattern               : @'<([\w\.-]+?\s*:\s*)?([\w\.-]+\s*)?/?>';
+      multi-line            : no;
+    },
+
+    regex-rule:
+    {
+      id                    : 'symbol.html.element.close';
+      pattern               : @'</([\w\.-]+\s*:\s*)?[\w\.-]+>';
+    },
+
+    regex-rule:
+    {
+      id                    : 'symbol.html.element.open.start';
+      multiline             : yes;
+      pattern               : @'<\??([\w\.-]+?\s*:\s*)?[\w\.-]+';
+      until                 : @'symbol.html.element.open.end';
+      skip-boundary         : yes;
+      
+      rules:
+      [
+        whitespace-rule:
+        {
+        },
+      
+        regex-rule:
+        {
+          id                : 'symbol.html.element.open.end';
+          pattern           : @'/?>';
+        }
+
+        regex-rule:
+        {
+          id                : 'default.html.attribute';
+          case-insensitive  : no;
+          pattern           : '(?<name>[\\w\\.\\-]+)\\s*=\\s*((?<string>("[^"]*")|(\'[^\']*\'))|(?<value>\\w+))';
+					
+          groups:
+          {
+            name            : 'symbol.html.attribute.name';
+						value						: 'symbol.html.attribute.value';
+            string          : 'literal.string.html.attribute.value';
+          };
+        },
+
+        default-rule:
+        {
+        },
+      ];
+    },
+
+		multiline-rule:
+		{
+			id                		: 'comment.multiline.html';
+			open-sequence     		: @'<!--';
+			close-sequence    		: @'-->';
+			capture-unclosed  		: yes;
+		},
+		
+		regex-rule:
+		{
+			id										: 'symbol.html.entity';
+			pattern								: @'&((#[xX]?\d+)|(\w+));';
+		},
+		
+		multiline-rule:
+		{
+			id                		: 'html.doctype';
+			open-sequence     		: @'<!DOCTYPE';
+			close-sequence    		: @'>';
+			capture-unclosed  		: yes;
+			
+			rules:
+			[
+				whitespace-rule:
+				{
+				},
+				
+				text-literal-rule:
+				{
+					id                    : 'literal.string.html.doctype';
+					open-sequence         : @'"';
+					close-sequence        : @'"';
+					escape-char           : @'\';
+					multiline							: no;
+					quoted-tokens         : yes;
+				},
+
+				text-literal-rule:
+				{
+					id                    : 'literal.char.html.doctype';
+					open-sequence         : '\'';
+					close-sequence        : '\'';
+					escape-char           : @'\';
+					multi-line            : no;
+					quoted-tokens         : yes;
+				},
+				
+				word-rule:
+				{
+					id                    : 'keyword.html.doctype';
+					case-insensitive      : yes;
+					words:                [ 'PUBLIC', ];
+				},
+				
+				regex-rule:
+				{
+					id								: 'symbol.html.doctype.open';
+					pattern						: @'<!DOCTYPE';
+				},
+				
+				regex-rule:
+				{
+					id								: 'symbol.html.doctype.close';
+					pattern						: '>';
+				},
+				
+				default-rule:
+				{
+				},
+			];
+		},
+
+		default-rule:
+		{
+		}
+	];
+};

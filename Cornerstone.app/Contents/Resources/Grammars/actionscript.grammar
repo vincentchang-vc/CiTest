@@ -1,0 +1,128 @@
+{
+	id                        : 'actionscript';
+	title                     : 'ActionScript';
+	match:
+	[ 
+		uti											: 'com.adobe.flash.actionscript',
+		
+		# also define file extension in order that we correctly match
+		# files which are incorrectly reported as 'public.archive.applesingle'
+		
+		extension								: 'as',
+	];
+
+	rules: 
+	[
+		whitespace-rule:
+		{
+		},
+		
+		# Multi-line comment partition
+		
+		multiline-rule:
+		{
+			id                		: 'comment.multiline.actionscript';
+			open-sequence     		: @'/*';
+			close-sequence    		: @'*/';
+			capture-unclosed  		: yes;
+		},
+		
+		# End-of-line comment partition
+		
+		eol-rule:
+		{
+			id										: 'comment.singleline.actionscript';
+			open-sequence					:	@'//';
+		},
+
+		# Pre-Defined Variables/Functions/Symbols
+
+		# Keywords
+
+		word-rule:
+		{
+			id                    : 'symbol.actionscript';
+			case-insensitive      : no;
+			words:                [ 
+															'arguments',
+															'chr',
+															'escape', 'eval',
+															'false', 'fscommand',
+															'Infinity'
+															'_global',
+															'_highquality',
+															'int',
+															'_level', 'length',
+															'NaN', 'newline', 'null',
+															'mbchr', 'mblength', 'mbord', 'mbsubstring',
+															'ord',
+															'_parent',
+															'_quality',
+															'_root', 'random', 
+															'_soundbuftime', 'substring', 
+															'trace', 'true',
+															'undefined', 'unescape',
+														];
+		},
+
+		word-rule:
+		{
+			id                    : 'keyword.actionscript';
+			case-insensitive      : no;
+			words:                [ 
+															'and',
+															'break',
+															'case', 'catch', 'class', 'continue',
+															'default', 'delete', 'do', 'dynamic',
+															'else', 'eq', 'extends',
+															'finally', 'for', 'function',
+															'ge', 'get', 'gt', 
+															'if', 'implements', 'import', 'in', 'instanceof', 'interface', 'intrinsic', 
+															'le', 'lt',
+															'ne', 'new', 'not',
+															'or', 
+															'package', 'private', 'public',
+															'return',
+															'set', 'static', 'super', 'switch',
+															'this', 'throw', 'try', 'typeof',
+															'var', 'void',
+															'while', 'with',
+														];
+		},
+		
+		# Text literal rules for strings and characters
+		
+		text-literal-rule:
+		{
+			id                    : 'literal.string.actionscript';
+			open-sequence         : @'"';
+			close-sequence        : @'"';
+			escape-char           : @'\';
+			multiline							: no;
+			quoted-tokens         : yes;
+		},
+		
+		text-literal-rule:
+		{
+			id                    : 'literal.string.actionscript.singlequote';
+			open-sequence         : @"'";
+			close-sequence        : @"'";
+			escape-char           : @'\';
+			multiline							: no;
+			quoted-tokens         : yes;
+		},
+
+		# Rule for integral and non-integral numeric literals
+		
+		regex-rule:
+		{
+			id                    : 'literal.number.actionscript';
+			case-insensitive      : no;
+			pattern               : @'((0x[\da-fA-F]+[lL]?)|((\d+)?\.(\d+)([eE]\d+)?[fF]?)|(\d+\.?(\d+([eE]\d+)?)?[fF]?))(?=\s|$|\W)';
+		},
+		
+		default-rule:
+		{
+		}
+	];
+};

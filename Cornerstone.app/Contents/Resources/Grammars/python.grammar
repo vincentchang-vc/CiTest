@@ -1,0 +1,210 @@
+{
+	id                        : 'python';
+	title                     : 'Python';
+	match:
+	[ 
+		extension								: 'py',
+	];
+
+	rules: 
+	[
+		whitespace-rule:
+		{
+		},
+		
+		# End-of-line comment partition which includes SCM keywords
+		
+		eol-rule:
+		{
+			id										: 'comment.singleline.python';
+			open-sequence					:	@'#';
+
+			rules:
+			[
+				whitespace-rule:
+				{
+				},
+			
+				regex-rule:
+				{
+					id                : 'comment.keyword.scm.python';
+					case-insensitive  : no;
+					pattern           : @'\$(?<name>\w+)\:(?<value>.*)\s\$';
+					groups:
+					{
+						name            : 'comment.keyword.scm.name.python';
+						value           : 'comment.keyword.scm.value.python';
+					};
+				},
+
+				default-rule:
+				{
+				},
+			];
+		},
+
+		# Python keywords
+
+		word-rule:
+		{
+			id                    : 'keyword.python';
+			case-insensitive      : no;
+			words:                [ 
+															'and', 'as', 'assert',
+															'break',
+															'class', 'continue',
+															'def', 'del',
+															'elif', 'else', 'except', 'exec', 
+															'finally', 'for', 'from',
+															'global',
+															'if', 'import', 'in', 'is', 
+															'lambda', 'not',
+															'or',
+															'pass', 'print',
+															'raise', 'return',
+															'try',
+															'while', 'with',
+															'yield',
+														];
+		},
+				
+		# Symbol rules for built-in symbols
+
+		word-rule:
+		{
+			id                    : 'symbol.python';
+			case-insensitive      : no;
+			words:                [ 
+															'None', 'True', 'False',
+														];
+		},
+				
+		# Text literal rules for strings and characters
+		
+		regex-rule:
+		{
+			id                    : 'literal.string.python.triple-quote';
+			pattern 							: '[rRuU]{,2}(?<delimiter>[\'"]{3}).*?\\k<delimiter>';
+			multiline							: yes;
+			
+			rules:
+			[
+				whitespace-rule:
+				{
+				},
+				
+				regex-rule:
+				{
+					id								: 'symbol.string.python.escaped-percent';
+					pattern						: '%%';
+				},
+		
+				regex-rule:
+				{
+					id                : 'symbol.python.escaped.character';
+					case-insensitive  : no;
+					pattern           : @'\\\w';
+				},
+
+				regex-rule:
+				{
+					id                : 'symbol.python.formatting.token';
+					case-insensitive  : no;
+					pattern           : @'%[.-]?\d?\w';
+				},
+
+				default-rule:
+				{
+				},
+			];
+		},
+
+		text-literal-rule:
+		{
+			id                    : 'literal.string.python.double-quote';
+			open-sequence         : @'"';
+			close-sequence        : @'"';
+			escape-char           : @'\';
+			multiline							: no;
+			quoted-tokens         : yes;
+			
+			rules:
+			[
+				whitespace-rule:
+				{
+				},
+		
+				ref									: 'symbol.string.python.escaped-percent',
+				ref               	: 'symbol.python.escaped.character',
+				ref               	: 'symbol.python.formatting.token',
+
+				default-rule:
+				{
+				},
+			];
+		},
+		
+		text-literal-rule:
+		{
+			id                    : 'literal.string.python.single-quote';
+			open-sequence         : @"'";
+			close-sequence        : @"'";
+			escape-char           : @'\';
+			multiline							: no;
+			quoted-tokens         : yes;
+			
+			rules:
+			[
+				whitespace-rule:
+				{
+				},
+		
+				ref									: 'symbol.string.python.escaped-percent',
+				ref               	: 'symbol.python.escaped.character',
+				ref               	: 'symbol.python.formatting.token',
+
+				default-rule:
+				{
+				},
+			];
+		},
+
+		text-literal-rule:
+		{
+			id                    : 'literal.string.python.backtick-quote';
+			open-sequence         : @"`";
+			close-sequence        : @"`";
+			escape-char           : @'\';
+			multiline							: no;
+			quoted-tokens         : yes;
+			
+			rules:
+			[
+				whitespace-rule:
+				{
+				},
+		
+				ref									: 'symbol.string.python.escaped-percent',
+				ref               	: 'symbol.python.escaped.character',
+				ref               	: 'symbol.python.formatting.token',
+
+				default-rule:
+				{
+				},
+			];
+		},
+
+		# Rule for integral and non-integral numeric literals
+		
+		regex-rule:
+		{
+			id                    : 'literal.number.python';
+			case-insensitive      : no;
+			pattern               : @'((0x[\da-fA-F]+[lL]?)|((\d+)?\.(\d+)([eE]\d+)?[fFj]?)|(\d+\.?(\d+([eE]\d+)?)?[fFj]?))(?=\s|$|\W)';
+		},
+		
+		default-rule:
+		{
+		}
+	];
+};

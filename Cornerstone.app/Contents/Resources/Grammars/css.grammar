@@ -1,0 +1,198 @@
+{
+	id                        : 'css';
+	title                     : 'CSS';
+	match:
+	[ 
+		uti											: 'com.apple.dashcode.css',
+		extension								: 'css',
+	];
+
+	rules: 
+	[
+		whitespace-rule:
+		{
+		},
+		
+		regex-rule:
+		{
+			id										: 'keyword.preprocessor.css.import';
+			pattern								: @'@import';
+		},
+
+		# Multi-line comment partition
+		
+		multiline-rule:
+		{
+			id                		: 'comment.multiline.css';
+			open-sequence     		: @'/*';
+			close-sequence    		: @'*/';
+			capture-unclosed  		: yes;
+		},
+		
+		# End-of-line comment partition which includes SCM keywords
+		
+		eol-rule:
+		{
+			id										: 'comment.singleline.css';
+			open-sequence					:	@'//';
+		},
+
+		# Text literal rules for strings
+		
+		text-literal-rule:
+		{
+			id                    : 'literal.string.css.double-quotes';
+			open-sequence         : @'"';
+			close-sequence        : @'"';
+			escape-char           : @'\';
+			multiline							: no;
+			quoted-tokens         : yes;
+		},
+		
+		text-literal-rule:
+		{
+			id                    : 'literal.string.css.single-quotes';
+			open-sequence         : '\'';
+			close-sequence        : '\'';
+			escape-char           : @'\';
+			multi-line            : no;
+			quoted-tokens         : yes;
+		},
+		
+		# Multiline partition for {...} style blocks
+		
+		multiline-rule:
+		{
+			id										: 'default.css.style';
+			open-sequence					: '{';
+			close-sequence				: '}';
+			
+			rules:
+			[
+				whitespace-rule:
+				{	
+				},
+				
+				# Multiline partition for property definition in form:
+				#
+				# property-name : property-value;
+				
+				regex-rule:
+				{
+					id								: 'default.css.property';
+					pattern						: @'[\w-]+\s*:';
+					until							: 'default.css.property.end';
+					
+					rules:
+					[
+						whitespace-rule:
+						{	
+						},
+						
+						regex-rule:
+						{
+							id						: 'keyword.css.property-name';
+							pattern				: @'[\w-]+(?=\s*:)';
+						},
+						
+						ref							: 'comment.multiline.css',
+						ref							: 'comment.singleline.css',
+						ref							: 'literal.string.css.double-quotes',
+						ref							: 'literal.string.css.single-quotes',
+
+						# Hexidecimal color rule
+
+						regex-rule:
+						{
+							id								: 'literal.number.css.color';
+							case-insensitive	: yes;
+							pattern						: @'#(([0-9a-f]{6})|([0-9a-f]{3}))';
+						},
+
+						# px/em/pt/% values
+
+						regex-rule:
+						{
+							id								: 'literal.number.css.number-with-unit';
+							case-insensitive	: yes;
+							pattern						: @'[+-]?(\d+)?(\.)?(\d+)?(?<=\.|\d)(px|em|ex|pt|pc|in|cm|mm|%)';
+						},
+
+						# url(...)
+						
+						regex-rule:
+						{
+							id								: 'default.css.url';
+							case-insensitive	: yes;
+							pattern						: @'(?<keyword>url)\((?<url>.*?\))';
+							groups:
+							{
+								keyword					: 'keyword.css';
+								url							: 'literal.string.css.url';
+							};
+						},
+
+						regex-rule:
+						{
+							id                : 'literal.number.css';
+							case-insensitive  : no;
+							pattern           : @'((0x[\da-fA-F]+[lL]?)|((\d+)?\.(\d+)([eE]\d+)?[fF]?)|(\d+\.?(\d+([eE]\d+)?)?[fF]?))(?=\s|$|\W)';
+						},
+						
+						regex-rule:
+						{
+							id                : 'literal.number.css.unicode.range';
+							case-insensitive  : yes;
+							pattern           : @'U\+[\da-f]{1,6}(?:\s*-\s*(?:U\+)?[\da-f]{1,6})?';
+						},
+
+						regex-rule:
+						{
+							id								: 'keyword.css';
+							pattern						: @'[\w-]+';
+						},
+
+						word-rule:
+						{
+							id						: 'default.css.property.end';
+							words					: [ ';' ];
+						},
+						
+						default-rule:
+						{
+						},
+					];
+				},
+				
+				ref									: 'comment.multiline.css',
+				ref									: 'comment.singleline.css',
+				ref									: 'literal.string.css.double-quotes',
+				ref									: 'literal.string.css.single-quotes',
+				
+				default-rule:
+				{
+				},
+			];
+		},
+		
+		regex-rule:
+		{
+			id										: 'symbol.css.selector';
+			pattern								: @'((@|\.|#|:)?[\w-]+)';
+		},
+		
+		regex-rule:
+		{
+			id										: 'symbol.css.selector.all';
+			pattern								: @'\*';
+		},
+
+		# Rule for integral and non-integral numeric literals
+		
+		ref											: 'literal.number.css',
+		
+		default-rule:
+		{
+		}
+	];
+};

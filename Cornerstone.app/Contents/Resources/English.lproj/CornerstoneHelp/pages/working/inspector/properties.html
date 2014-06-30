@@ -1,0 +1,148 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>	
+	<link href="../../../stylesheets/style.css" rel="stylesheet" media="all" />
+	<title>Properties Tab</title>
+	<style type="text/css">
+		code.prop {
+			font-size: 80%;
+			color: #999;
+		}
+		h3 {
+			margin-bottom: 0px;
+		}
+		h3 + p {
+			margin-top: 0.3em;
+		}
+	</style>
+</head>
+<body>
+	<div id="navbar">
+		<a id="home" href="index.html"></a>
+	</div>
+
+  <h1>Properties Tab</h1>
+  <p>Use the inspector's <span class="uiref">Properties</span> tab to edit the selected items' Subversion properties. You can edit the properties of multiple files or folders when multiple items are selected in the browser.</p>
+  <p>The fields displayed are dependent on the type of item selected:</p>
+  
+  <h2>File Properties</h2>
+  <h3>Keywords <code class="prop">svn:keywords</code></h3>
+  <p>The keyword names are displayed as tokens similar to E-mail address in Apple Mail.</p>
+  <p>To add a keyword:</p>
+  <div class="box task">
+  	<ol>
+  		<li>
+  			<p>Click in the field to activate it and start typing the name of the keyword. An auto-complete list will be displayed. To accept the suggestion press the <span class="key">Return</span> (⏎) key or type to the end of the word and press the <span class="key">Space</span> key.</p>
+  			<p><img class="screenshot" src="../../../images/keyword-edit-1.png"/></p>
+  		</li>
+  		<li>
+  			<p>Once accepted, the keyword is displayed as a blue button:</p>
+  			<p><img class="screenshot" src="../../../images/keyword-edit-2.png"/></p>
+  		</li>
+  		<li>
+  			<p>Continue typing to enter the next keyword:</p>
+  			<p><img class="screenshot" src="../../../images/keyword-edit-3.png"/></p>
+  		</li>
+  	</ol>
+  </div>
+  <p>To delete a keyword, either select the keyword button with the mouse or place the insertion point to the right of the button and press the <span class="key">Delete</span> (⌫) key.</p>
+  <p>You can also use the keyword menu located underneath the field to select from the list of available keywords:</p>
+  <p><img src="../../../images/keyword-menu.png"/></p>
+  <p>The selected keyword(s) will be inserted at the current cursor location.</p>
+  
+  <h3>Line Breaks <code class="prop">svn:eol-style</code></h3>
+  <p>Select how line breaks are processed when transmitting the file to or from the repository.</p>
+  <p>If you are sharing the file with team members working on Windows then you should consider setting this property to <span class="uiref">Convert to System (i.e. Native)</span>.</p>
+  <p>If all team members are working on a Mac (or other Unix-like operating systems such as Linux, FreeBSD or OpenBSD) then you can leave this property set to the default value of <span class="uiref">Do Nothing</span>.</p>
+  
+  <h3>MIME Type <code class="prop">svn:mime-type</code></h3>
+  <p>Select the file's MIME type from the popup list. If file's MIME type is not available in the list then type the value into the field.</p>
+  
+  <h3>Executable <code class="prop">svn:executable</code></h3>
+  <p>Set this field to <span class="uiref">Yes</span> for scripts which should be marked executable in the file system whenever the file is checked out or updated.</p>
+  <p>Subversion will automatically set this property to <span class="uiref">Yes</span> for executable files when they are added to the working copy.</p>
+  
+  <h3>Needs Lock <code class="prop">svn:needs-lock</code></h3>
+  <p>Set this field to <span class="uiref">Yes</span> if the file should be marked as read-only in the file system until locked.</p>
+  <p>See the <a href="../../introduction/terminology/locks.html">Locking</a> entry in the terminology section for more information.</p>
+  
+  <h2>Folder Properties</h2>
+  <h3>Ignore <code class="prop">svn:ignore</code></h3>
+  <p>The ignore patterns are displayed as tokens similar to E-mail address in Apple Mail.</p>
+  <p>To add a pattern:</p>
+  <div class="box task">
+  	<ol>
+  		<li>
+  			<p>Click in the field to activate it and start typing the pattern. You may include wildcard characters such as <code>*</code> and <code>?</code>. To accept the suggestion press the <span class="key">Return</span> (⏎) key.</p>
+  			<p><img class="screenshot" src="../../../images/ignore-edit-1.png"/></p>
+  		</li>
+  		<li>
+  			<p>Once accepted, the pattern is displayed as a blue button:</p>
+  			<p><img class="screenshot" src="../../../images/ignore-edit-2.png"/></p>
+  		</li>
+  	</ol>
+  </div>
+	<p>Note that ignore patterns are case-sensitive.</p>
+  <p>To delete a pattern, either select the pattern button with the mouse or place the insertion point to the right of the button and press the <span class="key">Delete</span> (⌫) key.</p>
+
+	<div class="box note">
+  	<p>Individual items can be ignored using the <span class="uiref">Ignore</span> function on the items' right-click menu.</p>
+	</div>
+	
+	<p>It is only possible to ignore unversioned files, i.e. files which are under version control (including those scheduled to be added) can no longer be ignored.</p>
+	<p>To ignore a file scheduled to be added:</p>
+	<div class="box task">
+		<ol>
+			<li>Unschedule addition of the file using the <span class="uiref">Revert</span> function.</li>
+			<li>Ignore the resultant unversioned file.</li>
+		</ol>
+	</div>
+  
+  <div class="box note">
+  	<p>Wildcard patterns are <em>not</em> inherited by a folder's sub-folders. If you want to ignore items across an entire folder hierarchy then you will have to:</p>
+  	<ol>
+  		<li>
+  			<p>Add the ignore pattern to each sub-folder</p>
+  			<p>or:</p>
+  		</li>
+  		<li>Add the ignore pattern to your global ignore list.
+  		<p>You can do this in the application's preferences or by editing your Subversion configuration (see <span class="uiref">Help > Subversion Documentation</span> for information on how to do this.)</p>
+  		</li>
+  	</ol>
+  </div>
+
+  <h3>Externals <code class="prop">svn:externals</code></h3>
+  <p>The externals table displays the entries from the folder's <code>svn:externals</code> properties.</p>
+  <p>Click the <span class="uiref">Open Externals</span> button to open an editor for the folder's externals or select <span class="uiref">Open Externals...</span> from the <span class="uiref">File</span> menu (key equivalent <span class="key">⇧⌘X</span>).</p>
+  
+  <h2>Reverting Properties</h2>
+  <p>A property which has been changed since the last update or commit is described as <span class="term">modified</span> and is indicated with a button:</p>
+  <p>
+  	<img class="screenshot" src="../../../images/keywords-modified.png"/>
+  </p>
+  <p>To revert a modified property to a pristine copy of it's BASE revision:</p>
+  <div class="box task">
+  	<ol>
+  		<li>
+  			<p>Click the property's <img src="../../../images/modified-property-button.png"/> pop-up button to display a menu.</p>
+  		</li>
+  		<li>
+  			<p>Select the <span class="uiref">Revert to Last Update</span> command.</p>
+  		</li>
+  		<li>
+  			<p>The property's modified value is replaced with the property's BASE value.</p>
+  		</li>
+  		<li>
+  			<p>Click <span class="uiref">Save Changes</span>.</p>
+  		</li>
+  	</ol>
+  </div>
+  
+  <h2>User Properties</h2>
+  <p>Cornerstone's Inspector can be extended to show additional fields for user properties. See the <a href="../../integration/user-properties/index.html">User Properties</a> section for more information.</p>
+  
+</body>
+</html>

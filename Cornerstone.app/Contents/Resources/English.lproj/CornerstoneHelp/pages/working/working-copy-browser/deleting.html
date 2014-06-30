@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>	
+	<link href="../../../stylesheets/style.css" rel="stylesheet" media="all" />
+	<title>Deleting Working Copy Items</title>
+</head>
+<body>
+	<div id="navbar">
+		<a id="home" href="index.html"></a>
+	</div>
+
+  <h1>Deleting Working Copy Items</h1>
+  <p>Delete items in a working copy by performing the following steps:</p>
+  <div class="box task">
+  	<ol>
+  		<li>Select the items to be deleted.</li>
+  		<li>Remove the items by selecting <span class="uiref">File &gt; Delete</span> (key equivalent <span class="key">⌘⌫</span>), clicking the <span class="uiref">Delete</span> toolbar button or using the <span class="uiref">Delete</span> function on the item's right-click menu.
+  			<div class="box note">
+  				<p>If the selected item has been been modified since the last update or commit, Cornerstone prompts to copy the item to the Trash before performing the delete. Selecting <span class="uiref">Delete Anyway</span> will result in modifications being irretrievably lost.</p>
+  			</div>
+  		</li>
+  		<li>The items are scheduled for deletion.</li>
+  	</ol>
+  </div>
+
+	<p>Files are deleted from the file system immediately. When deleting folders, all files are removed from the folder and all sub-folders, but the skeleton folder structure remains in place until the deletion is committed to the repository.</p>
+	<div class="box note">
+		<p>The skeleton folders will be removed after the deletion has been committed to the repository.</p>
+		<p><strong>Do not delete the skeleton folders manually before you have committed the changes.</strong></p>
+	</div>
+	
+  <h2>Undoing a Delete</h2>
+  <p>You can use the <span class="uiref">Revert</span> function to undo a delete.</p>
+  <div class="box note">
+  	<p>Note the items will be reverted back to their BASE revisions. Any modifications made prior to the delete will not be restored.</p>
+  </div>
+</body>
+</html>

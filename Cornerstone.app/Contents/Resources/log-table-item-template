@@ -1,0 +1,122 @@
+<? foreach ($item in $items) ?>
+<? $gutterColor = gutterColorForItem($item) ?>
+<div class="item" 
+	onmousedown="javascript:window.application.itemClicked(<?= $item.revision ?>)"
+	ondblclick="javascript:window.application.itemDoubleClicked(<?= $item.revision ?>)"
+	revision="<?= $item.revision ?>" date="<?= formatDate($item.date) ?>"
+	<? if($self.showsGutter == true && $gutterColor != null) ?>style="background-color: <?= hex($gutterColor) ?>"<? endif ?>>
+	<? if ($self.showsDateSeparators == true && $item.date != null) ?>
+	<div class="date">
+		<h1><span><?= formatLongDate($item.date) ?></span></h1>
+	</div>
+	<? endif ?>
+	<div class="item-inner">
+	<div class="item-info"><? if ($item.author != null && $item.author.length > 0) ?><span class="item-author"><?= $item.author ?></span> &middot; <? endif ?><?= formatTime($item.date) ?><? if ($self.showsItemDate) ?>, <? if ($self.showsItemDayOfWeek == true) ?><?= formatDayOfWeek($item.date) ?> <? endif ?><?= formatDate($item.date) ?><? endif ?><? if ($self.showsItemAge == true) ?> &middot; <?= formatAge($item.date) ?><? endif ?></div>
+	
+	<? function renderCheckbox($item) ?>
+		<input id="checkbox<?= $item.revision ?>" type="checkbox" onclick="javascript:window.application.itemCheckboxClicked(<?= $item.revision ?>);" ondblclick="javascript:event.stopPropagation()" <? if (isChecked($item)) ?>checked="true"<? endif ?>/>
+	<? endfunction ?>
+	
+	<? function renderBadges($item) ?>
+		<? foreach ($badge in $self.badges) ?>
+			<span id="<?= $badge.identifier ?><?= $item.revision ?>" class="badge badge-<?= $badge.identifier ?>" <? if (shouldShowBadge($badge, $item) == false) ?>style="display: none"<? endif ?><? if ($badge.toolTip != null) ?> title='<?= quote($badge.toolTip) ?>'<? endif ?>><? if ($badge.imageName != null) ?><img src="<?= $badge.imageName ?>"/><? endif ?><?= $badge.title ?></span>
+		<? endforeach ?>	
+	<? endfunction ?>
+	
+	<h1><? if ($self.showsCheckboxes == true) ?><? renderCheckbox($item) ?><? endif ?><?= formatRevision($item.revision) ?><? renderBadges($item) ?></h1>
+	<div class="item-message">
+		<div class="item-message-text">
+			<pre><?= formatMessage($item.message) ?></pre>
+		</div>
+		<div class="item-message-footer">
+			<a class="item-message-expand-button" href="javascript:void(0)"
+				onclick="javascript:toggleMessageExpansion(this.parentNode.parentNode)" 
+				onmousedown="javascript:event.stopPropagation()"
+				ondblclick="javascript:event.stopPropagation()">
+				<img/>
+			</a>
+		</div>
+	</div>
+	<? if ($self.buttons.@count > 0) ?>
+	<div class="item-button-bar">
+		<? foreach ($button in $self.buttons) ?>
+		<a id="<?= identifierForButton($button, $item) ?>"
+			class="button" href="javascript:void(0)" 
+			onclick="javascript:window.application.buttonClicked('<?= $button.identifier ?>', <?= $item.revision ?>)"
+			onmousedown="javascript:event.stopPropagation()"
+			ondblclick="javascript:event.stopPropagation()"
+			<? if (shouldShowButton($button, $item) == false) ?>style="display: none"<? endif ?>><?= buttonTitleForItem($button, $item) ?></a>
+		<? endforeach ?>
+	</div>
+	<? endif ?>
+	<? if ($self.showsChanges == true) ?>
+	<div class="changes unexpanded">
+		<h2>
+			<a class="changes-disclosure-button" href="javascript:void(0)"
+				onclick="javascript:window.application.changesDisclosureButtonClicked(<?= $item.revision ?>)">
+				<img/></a>Changes<span class="summary"><?= $item.changes.@count ?></span>
+		</h2>
+		
+		<div class="changes-contents">
+			
+		<? function renderChangeList($item, $changes, $class) ?>
+			<ul>
+			<? foreach ($change in sort($changes)) ?>
+				<? $escapedPath = quote($change.path) ?>
+				<li class="change <?= $class ?>" path="<?= $change.path ?>">
+          <img/>
+					<a id="<?= identifierForChange($change, $item) ?>" class="change-link" href="javascript:void(0)"
+						onmousedown="javascript:window.application.changeClicked('<?= $escapedPath ?>', <?= $item.revision ?>);"
+						ondblclick="javascript:window.application.changeDoubleClicked('<?= $escapedPath ?>', <?= $item.revision ?>);">
+						<span class="change-name"><?= filename($change.path) ?></span> &middot; <?= directory($change.path) ?>
+					</a>
+					<? if ($change.copyPath != null) ?>
+					<? $escapedPath = quote($change.copyPath) ?>
+					<p>
+						<? if (changeIsMove($change, $item) == true) ?>Moved<? else ?>Copied<? endif ?> from 
+							<a class="change-link source-link" href="javascript:void(0)"
+								onmousedown="javascript:window.application.changeCopySourceClicked('<?= $escapedPath ?>', <?= $item.revision ?>);"
+								ondblclick="javascript:window.application.changeCopySourceDoubleClicked('<?= $escapedPath ?>', <?= $item.revision ?>);">
+								<span class="change-name"><?= filename($change.copyPath) ?></span> &middot; <?= directory($change.copyPath) ?> &middot; <?= formatRevision($change.copyRevision) ?>
+							</a>
+					</p>
+					<? endif ?>
+				</li>
+			<? endforeach ?>
+			</ul>
+		<? endfunction ?>
+
+		<? $additions = $item.additions ?>
+
+		<? if ($additions.@count > 0) ?>
+		<h3>Added:<span class="summary"><?= $additions.@count ?></span></h3>
+		<? renderChangeList($item, $additions, "addition") ?>
+		<? endif ?>
+		
+		<? $deletions = $item.deletions ?>
+		
+		<? if ($deletions.@count > 0) ?>
+		<h3>Deleted:<span class="summary"><?= $deletions.@count ?></span></h3>
+		<? renderChangeList($item, $deletions, "deletion") ?>
+		<? endif ?>
+
+		<? $modifications = $item.modifications ?>
+
+		<? if ($modifications.@count > 0) ?>
+		<h3>Modified:<span class="summary"><?= $modifications.@count ?></span></h3>
+		<? renderChangeList($item, $modifications, "modification") ?>
+		<? endif ?>
+
+		<? $replacements = $item.replacements ?>
+
+		<? if ($replacements.@count > 0) ?>
+		<h3>Replaced:<span class="summary"><?= $replacements.@count ?></span></h3>
+		<? renderChangeList($item, $replacements, "replacement") ?>
+		<? endif ?>
+
+		</div>
+	</div>
+	<? endif ?>
+	</div>
+</div>
+<? endforeach ?>

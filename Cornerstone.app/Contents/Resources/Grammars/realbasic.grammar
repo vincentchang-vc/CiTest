@@ -1,0 +1,187 @@
+{
+	id                        : 'realbasic';
+	title                     : 'REALbasic';
+	match:
+	[ 
+		extension								: 'rbbas',
+		extension								: 'rbfrm',
+		extension								: 'rbmnu',
+	];
+
+	rules: 
+	[
+		whitespace-rule:
+		{
+		},
+		
+		regex-rule:
+		{
+			id										: 'default.realbasic.note';
+			case-insensitive			: yes;
+			skip-boundary					: no;
+			pattern								: @'#tag\s+note.*';
+			until									: @'default.realbasic.note.end';
+			
+			rules:
+			[
+				whitespace-rule:
+				{
+				},
+
+				regex-rule:
+				{
+					id								: 'default.realbasic.note.start';
+					case-insensitive	: yes;
+					pattern						: @'(?<tag>#tag)\s+note.*';
+					groups:
+					{
+						tag							: 'keyword.preprocessor.realbasic.note.tag.start';
+					};
+				},
+
+				regex-rule:
+				{
+					id								: 'default.realbasic.note.end';
+					case-insensitive	: yes;
+					pattern						: @'(?<tag>#tag)\s+endnote';
+					groups:
+					{
+						tag							: 'keyword.preprocessor.realbasic.note.tag.end';
+					};
+				},
+				
+				default-rule:
+				{
+					id								: 'comment.realbasic.note';
+				}
+			];
+		},
+		
+		# End-of-line comment partitions
+		
+		regex-rule:
+		{
+			id										: 'comment.singleline.realbasic.rem';
+			pattern								:	@'(r|R)(e|E)(m|M)\b.*';
+		},
+
+		eol-rule:
+		{
+			id										: 'comment.singleline.realbasic.double-slash';
+			open-sequence					:	@'//';
+		},
+
+		eol-rule:
+		{
+			id										: 'comment.singleline.realbasic.single-quote';
+			open-sequence					:	"'";
+		},
+
+		# Pre-Defined Variables/Functions/Symbols
+
+		# Keywords
+
+		word-rule:
+		{
+			id                    : 'symbol.realbasic';
+			case-insensitive      : yes;
+			words:                [ 
+															'debugbuild', 'false', 'nil', 'rbversion', 'rbversionstring', 'true',
+														];
+		},
+
+
+		regex-rule:
+		{
+			id										: 'keyword.preprocessor.realbasic';
+			pattern								: @'#\w+\b';	
+		},
+		
+		word-rule:
+		{
+			id                    : 'keyword.realbasic';
+			case-insensitive      : yes;
+			words:                [
+															'addressof', 'aggregates', 'and', 'array', 'as', 'assigns', 'attributes',
+															'boolean', 'byref', 'byte', 'byval',
+															'call', 'case', 'catch', 'class', 'color', 'const', 'continue', 'cstring', 'ctype', 'currency',
+															'debugprint', 'declare', 'delegate', 'dim', 'do', 'double', 'downto',
+															'each', 'else', 'elseif', 'end', 'equals', 'event', 'exception', 'exit', 'extends'
+															'finally', 'for', 'function',
+															'get', 'goto',
+															'handles',
+															'if', 'implements', 'in', 'inherits', 'inline68k', 'integer', 'interface', 'int16', 'int32', 'int64', 'int8', 'is', 'isa',
+															'lib', 'loop',
+															'me', 'mod', 'module',
+															'namespace', 'new', 'next', 'not',
+															'object', 'of', 'optional', 'or',
+															'paramarray', 'private', 'protected', 'pstring', 'ptr', 'public',
+															'raise', 'raiseevent', 'redim', 'return',
+															'select', 'self', 'set', 'shared', 'single', 'soft', 'static', 'step', 'string', 'structure', 'sub', 'super',
+															'then', 'to', 'try',
+															'ubyte', 'uint16', 'uint32', 'uint64', 'uint8', 'until',
+															'wend', 'while', 'with',
+														];
+		},
+		
+		# Text literal rules for strings and characters
+		
+		text-literal-rule:
+		{
+			id                    : 'literal.string.realbasic';
+			open-sequence         : @'"';
+			close-sequence        : @'"';
+			escape-char           : @'\';
+			multiline							: no;
+			quoted-tokens         : yes;
+		},
+		
+		# Rule for integral and non-integral numeric literals
+		
+		regex-rule:
+		{
+			id                    : 'literal.number.realbasic';
+			case-insensitive      : no;
+			pattern               : @'((0x[\da-fA-F]+[lL]?)|((\d+)?\.(\d+)([eE]\d+)?[fF]?)|(\d+\.?(\d+([eE]\d+)?)?[fF]?))(?=\s|$|\W)';
+		},
+		
+		regex-rule:
+		{
+			id                    : 'literal.number.realbasic.binary';
+			case-insensitive      : yes;
+			pattern               : @'&b[01]+';
+		},
+
+		regex-rule:
+		{
+			id                    : 'literal.number.realbasic.color';
+			case-insensitive      : yes;
+			pattern               : @'&c[0-9a-f]{6}';
+		},
+
+		regex-rule:
+		{
+			id                    : 'literal.number.realbasic.hex';
+			case-insensitive      : yes;
+			pattern               : @'&h[0-9a-f]+';
+		},
+
+		regex-rule:
+		{
+			id                    : 'literal.number.realbasic.octal';
+			case-insensitive      : yes;
+			pattern               : @'&o[0-7]+';
+		},
+
+		regex-rule:
+		{
+			id                    : 'literal.number.realbasic.unicode';
+			case-insensitive      : yes;
+			pattern               : @'&u[0-9a-f]+';
+		},
+		
+		default-rule:
+		{
+		}
+	];
+};

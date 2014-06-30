@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>	
+	<link href="../../../../stylesheets/style.css" rel="stylesheet" media="all" />
+	<title>The Timeline View</title>
+	<style type="text/css">
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			font-size: 9pt;
+		}
+		table td {
+			border: 1px solid #dfdfdf;
+			vertical-align: top;
+			padding: 0.4em;
+		}
+	</style>
+</head>
+<body>
+	<div id="navbar">
+		<a id="home" href="../index.html"></a>
+		<a id="next" href="selection.html"></a>
+	</div>
+
+  <h1>The Timeline View</h1>
+  <p>The timeline displays the history logs for the selected items in a compact, visual style which enables the comparison of multiple logs by stacking them vertically above one another:</p>
+  <p><img class="screenshot" src="../../../../images/timeline-large.png"/></p>
+  
+  <h2>Timeline Axis</h2>
+  <p>Each item's log is represented as a single horizontal strip, with the oldest revision on the left and newest revision on the right.</p>
+  <p>The date of each revision is displayed in compact form stacked from top to bottom in the timeline's axis.</p>
+  <p>If you wish to maximize the vertical space available in the history viewer you can collapse the timeline axis using the disclosure button (<img src="../../../../images/disclosure-button.png"/>) in the upper left corner of the filter area.</p>
+  
+  <h2>Branches</h2>
+  <p>Items whose histories' contain branch points (including simple moves and copies) are displayed with a disclosure button next to the item's name. Expanding the disclosure button (<img src="../../../../images/disclosure-button.png"/>) reveals the ancestor's history and the branch point on the timeline:</p>
+  <p><img class="screenshot" src="../../../../images/timeline-branch.png"/></p>
+  <p>In the above example <code>WebNSAttributedStringExtras.mm</code> was branched from <code>WebNSAttributedStringExtras.m</code> at revision 9,996.</p>
+  
+  <h2>Revision Symbols</h2>
+  <p>The revision symbols used have the following meanings:</p>
+  <table>
+  	<tr>
+  		<td><img src="../../../../images/log-action-added-match.png"/></td>
+  		<td>The item was added to the repository either through an import or by being added to a working copy.</td>
+  	</tr>
+  	<tr>
+  		<td><img src="../../../../images/log-action-copied-match.png"/></td>
+  		<td>The item was branched. Branching operations include copies, moves and renames. Expanding the timeline will reveal the source of the branch operation, indicating whether the item was copied or moved.</td>
+  	</tr>
+  	<tr>
+  		<td><img src="../../../../images/log-action-modified-match.png"/></td>
+  		<td>The item was modified. Both content and property modifications are displayed in this way.</td>
+  	</tr>
+  	<tr>
+  		<td><img src="../../../../images/log-action-unspecified-match.png"/></td>
+  		<td>
+  			A change was committed on the item's path. The item itself was not modified. Such modifications include:
+  			<ul>
+  				<li>An ancestor was branched or modified.</li>
+  				<li>A descendent was added, modified or removed (folders only).</li>
+  			</ul>
+  		</td>
+  	</tr>
+  	<tr>
+  		<td><img src="../../../../images/log-action-deleted-match.png"/></td>
+  		<td>The item was deleted.</td>
+  	</tr>
+  </table>
+  
+	<h3>Topics</h3>
+  <ul class="plain">
+  	<li><a href="selection.html">Switching to the Timeline View</a></li>
+  	<li><a href="filtering.html">Filtering the Timeline</a></li>
+  	<li><a href="inspector.html">The Timeline Inspector</a></li>
+  	<li><a href="comparing.html">Comparing Revisions in the Timeline View</a></li>
+  	<li><a href="exporting.html">Exporting Revisions from the Timeline View</a></li>
+  </ul>
+  
+</body>
+</html>

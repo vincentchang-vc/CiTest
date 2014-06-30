@@ -1,0 +1,48 @@
+{
+	# this file contains UTIs and overrides for their conformance.
+	
+	# com.apple.property-list
+	#
+	# special-case handling for formats such as Apple plists, which can be binary
+	# or text (nominally com.apple.xml.property-list) which may be
+	# described by com.apple.property-list in absence of more information
+	# e.g. when UTI is obtained based purely on file extension.
+	
+	'com.apple.property-list': 
+	{
+		conforms-to: [ 'public.xml' ];
+	};
+	
+	# also handled are ActionScript files who's UTI gets confused with a format
+	# of Apple's (apparently due to Adobe not declaring the type correctly).
+	
+	'public.archive.applesingle':
+	{
+		conforms-to: [ 'public.script' ];
+	};
+	
+	# UTI changed on Snow Leopard to 'com.apple.applesingle-archive':
+
+	'com.apple.applesingle-archive':
+	{
+		conforms-to: [ 'public.script' ];
+	};
+
+	# REALbasic files are only declared as public.composite-content and not as public.source-code
+	# because the files can be both binary and plain text.
+
+	'com.realsoftware.realbasic.class': 
+	{
+		conforms-to: [ 'public.source-code' ];
+	};
+
+	'com.realsoftware.realbasic.window': 
+	{
+		conforms-to: [ 'public.source-code' ];
+	};
+
+	'com.realsoftware.realbasic.project': 
+	{
+		conforms-to: [ 'public.plain-text' ];
+	};
+}

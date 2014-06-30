@@ -1,0 +1,1723 @@
+<html>
+	<head>
+		<style type="text/css">
+		
+			/* 
+			 ***************** General Styles *******************
+			 */
+		  body
+			{
+				font-family: "Lucida Grande";
+				padding: 0px;
+				margin: 0px;
+				background-color: #fafafa;
+				<? if ($self.controlSize == 0) ?>
+				font-size: 13px;
+				<? elseif ($self.controlSize == 1) ?>
+				font-size: 11px;
+				<? else ?>
+				font-size: 10px;
+				<? endif ?>
+				-khtml-user-select: none;
+				cursor: default;
+		  }
+			
+		  table
+			{
+		  	font-size: 100%;
+		  }
+			
+			/* 
+			 ****************** Items Styles *********************
+			 */
+			#items
+			{
+				width: 100%;
+			}
+			
+		  .item
+			{
+		  	border-bottom: 1px solid #e7ebf1;
+				padding: 0;
+				margin: 0;
+		  	margin-bottom: 0em;
+				clear: both;
+				position: relative;
+		  	background-color: white;
+		  }
+		
+			.item-inner
+			{
+				padding: 0.4em 0.7em 0.4em 0.7em;
+		  	background-color: white;
+			
+				<? if ($self.showsGutter == true) ?>
+				margin-left: 5px;
+				<? endif ?>
+			}
+			
+		  .item:nth-child(even), .item:nth-child(even) .item-inner
+			{
+		  	background-color: #f1f5fa;
+		  }
+
+		  .item-inner > h1
+			{
+		  	margin-top:0.5em;
+		  	margin-bottom: 0em;
+				padding: 0;
+		  	font-weight: bold;
+		  	font-size: 135%;
+		  }
+						
+		  .item-info
+			{
+		  	float: right;
+		  	color: #888;
+		  	font-size: 88%;
+				font-weight: normal;
+				margin-top: 1.30em;
+				text-align: right;
+		  }
+		
+			.item-author
+			{
+				font-style: italic;
+			}
+			
+			.item-message
+			{
+				position: relative;
+		  	margin-top: 0.5em;
+				<? if ($self.controlSize == 0) ?>
+				max-height: <?= ($self.maximumMessageLines * 22) + 1 ?>px;
+				<? elseif ($self.controlSize == 1) ?>
+				max-height: <?= ($self.maximumMessageLines * 21) - 1 ?>px;
+				<? else ?>
+				max-height: <?= ($self.maximumMessageLines * 20) - 1 ?>px;
+				<? endif ?>
+				overflow: hidden;
+				border: 1px solid transparent;
+				-webkit-border-radius: 2;
+			}
+						
+			.item-message-text
+			{
+				padding: 0.5em;
+				<? if ($self.controlSize == 0) ?>
+				font-size: 12px;
+				<? endif ?>
+				<? if ($self.selectionMode != 1) ?>
+				-khtml-user-select: auto;
+				cursor: text;
+				<? endif ?>
+			}
+			
+			.item-message-text pre
+			{
+		  	font-family: "Monaco";
+				white-space: pre-wrap;
+				margin: 0;
+			}
+			
+			.item-message-footer
+			{
+				position: absolute;
+				bottom: 0px;
+				height: 20px;
+				background-color: rgba(245, 245, 245, 0.9);
+				background: -webkit-gradient(linear, left top, left bottom, 
+					from(rgba(255, 255, 255, 0.85)), to(rgba(235, 235, 235, 1.0)));
+				border-top: 1px solid #ccc;
+				width: 100%;
+				height: 18px;
+			}
+			
+			.item:nth-child(even) .item-message-footer
+			{
+				background-color: rgba(212, 218, 224, 0.9);
+				background: -webkit-gradient(linear, left top, left bottom, 
+					from(rgba(220, 230, 239, 0.90)), to(rgba(214, 220, 226, 1.0)));
+				border-top: 1px solid #b6bbc0;
+			}
+			
+			.item-message-expand-button
+			{
+				position: absolute;
+				margin-left: 0.5em;
+				float: right;
+				bottom: 4px;
+				right: 3px;
+				background-image: url(message-expand-button.png);
+				background-size: 19px 10px;
+				background-repeat: no-repeat;
+			}
+			
+			.item-message-expand-button img
+			{
+				visibility: hidden;
+				width: 19px;
+				height: 10px;
+			}
+			
+			.item-message[overflow="yes"]
+			{
+				border: 1px solid rgba(0, 0, 0, 0.2);
+				margin-bottom: 0.2em;
+			}
+			
+			.item:nth-child(even) .item-message[overflow="yes"]
+			{
+				border: 1px solid #b6bbc0;
+			}
+
+			.item-message[overflow="yes"] .item-message-footer
+			{
+				visibility: visible;
+			}
+			
+			.item-message[overflow="no"] .item-message-footer
+			{
+				visibility: hidden;
+			}
+			
+			.item-message[expanded="yes"]
+			{
+				max-height: none;
+			}
+			
+			.item-message[expanded="yes"] .item-message-text
+			{
+				margin-bottom: 18px;
+			}
+			
+			.item-message[expanded="yes"] .item-message-expand-button
+			{
+				background-image: url(message-collapse-button.png);
+			}
+			
+			@media screen and (-webkit-min-device-pixel-ratio: 2)
+			{
+				.item-message-expand-button
+				{
+					background-image: url(message-expand-button@2x.png);
+				}
+
+				.item-message[expanded="yes"] .item-message-expand-button
+				{
+					background-image: url(message-collapse-button@2x.png);
+				}
+			}
+			
+			.item-button-bar
+			{
+				margin-top: 0.5em;
+				margin-bottom: 0.7em;
+				text-align: right;
+				<? if ($self.showsChanges == true) ?>
+				float: right;
+				<? endif ?>
+			}
+			
+			.summary
+			{
+				font-size: 9px;
+				color: #8692a4;
+		  	padding: 0em 0.5em 0em 0.5em;
+				margin-left: 0.2em;
+				font-weight: normal;
+			}
+
+			.summary:before
+			{
+				content: "(";
+			}
+			
+			.summary:after
+			{
+				content: ")";
+			}
+
+			/* 
+			 ************* Date Separator styles *****************
+			 */
+			.date
+			{
+				text-align: center;
+				background-image: url(log-date-separator.png);
+				background-size: 1px 25px;
+				background-repeat: repeat-x;
+				height: 7px;
+				position: absolute;
+				width: 100%;
+				top: -1px;
+				padding: 2px 0 2px 0;
+			}
+
+			.date h1
+			{
+				font-size: 9pt;
+				font-weight: normal;
+				padding: 2px 0px 5px 9px;
+				background-image: url(log-date-separator-tab-left.png);
+				background-size: 9px 25px;
+				background-repeat: no-repeat;
+				display: inline;
+			}
+
+			.date h1 span
+			{
+				padding: 2px 9px 5px 2px;
+				color: rgba(255, 255, 255, 0.8);
+				text-shadow: 0px -1px rgba(0, 0, 0, 0.2);
+				background-image: url(log-date-separator-tab-right.png);
+				background-size: 424px 25px;
+				background-repeat: no-repeat;
+				background-position: top right;
+			}
+
+			@media screen and (-webkit-min-device-pixel-ratio: 2)
+			{
+				.date
+				{
+					background-image: url(log-date-separator@2x.png);
+				}
+
+				.date h1
+				{
+					background-image: url(log-date-separator-tab-left@2x.png);
+				}
+
+				.date h1 span
+				{
+					background-image: url(log-date-separator-tab-right@2x.png);
+				}
+			}
+
+
+			.fixed
+			{
+				position: fixed;
+				z-index: 1;
+				top: 0;
+				display: none;
+			}
+
+			/*
+			 ******************** Buttons ************************
+			 */
+		  .button
+			{
+				margin-left: 0.3em;
+		  	cursor: default;
+		  	border: 1px solid #b0b0b0;
+		  	background-color: #e6e6e6;
+				background: -webkit-gradient(linear, left top, left bottom, from(#f9f9f9), to(#dbdbdb));
+				-webkit-border-radius: 8px;
+				<? if ($self.controlSize == 0) ?>
+				font-size: 12px;
+				padding: 0.1em 0.8em 0.1em 0.8em;
+				<? else ?>
+				font-size: 11px;
+				padding: 0.05em 0.9em 0.1em 0.9em;
+				<? endif ?>
+				text-decoration: none;
+				color: black;
+		  }
+			
+		  .button:hover
+			{
+		  	background-color: #e0e0e0;
+		  }
+			
+		  .button:active
+			{
+		  	background-color: #d0d0d0;
+				background: -webkit-gradient(linear, left top, left bottom, from(#d0d0d0), to(#f9f9f9));
+		  }
+
+			/*
+			 ******************** Badges ************************
+			 */
+			.badge {
+				font-size: 7pt;
+				font-weight: bolder;
+				padding: 2px 4px 2px 4px;
+				-webkit-border-radius: 4px;
+				vertical-align: 10%;
+				margin-left: 0.2em;
+			}
+			
+			.badge img {
+				margin-right: 0.5em;
+			}
+
+			<? foreach ($badge in $self.badges) ?>
+			.badge-<?= $badge.identifier ?> {
+				<? if ($badge.backgroundColor != null) ?>
+				background-color: <?= hex($badge.backgroundColor) ?>;
+				<? endif ?>
+				<? if ($badge.foregroundColor != null) ?>
+				color: <?= hex($badge.foregroundColor) ?>;
+				<? endif ?>
+				<? if ($badge.borderColor != null) ?>
+				border: 1px solid <?= hex($badge.borderColor) ?>;
+				<? endif ?>
+				<? if ($badge.textShadow != null) ?>
+				text-shadow: <?= shadow($badge.textShadow) ?>;
+				<? endif ?>
+			}
+			<? endforeach ?>
+			
+			/*
+			 ******************** Overlay ************************
+			 */
+			#overlay {
+				display: none;
+				opacity: 0;
+				position: fixed;
+				bottom: 0px;
+				width: 100%;
+				text-align: center;
+				font-size: 8pt;
+			}
+			
+			#overlay-bezel {
+				margin: 12px;
+				margin-top: -200px;
+				background-color: rgba(80, 80, 80, 0.9);
+				color: white;
+				font-weight: bold;
+				text-shadow: 0px 0px 4px rgba(0, 0, 0, 1);
+				-webkit-border-radius: 5px;
+				padding: 6px 10px 7px 10px;
+ 				-webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
+ 				display: inline-table;
+			}
+			
+			#overlay-img {
+				display: none;
+				vertical-align: middle;
+			}
+			
+			#overlay-title {
+				display: none;
+			}
+			
+			/* 
+			 ***************** Changes styles ********************
+			 */
+			.changes
+			{
+				padding-bottom: 0.5em;
+			}
+			
+			.changes-contents
+			{
+				display: none;
+		  	padding-left: 15px;
+			}
+			
+		  .changes > h2
+			{
+				margin: 0;
+		  	margin-top: 0.5em;
+				margin-left: 0.0em;
+				padding-left: 2px;
+				padding-top: 0em;
+				font-size: 120%;
+		  }
+		
+			.changes h3
+			{
+				font-weight: bold;
+				font-size: 100%;
+				margin-bottom: 0px;
+			}
+		
+			.changes-disclosure-button
+			{
+				margin-right: 0.4em;
+				background-repeat: no-repeat;
+				background-position: 0px 0.3em;
+				background-image: url(disclosure-closed.png);
+				background-size: 9px 9px;
+				cursor: default;
+			}
+			
+			.changes-disclosure-button img
+			{
+				width: 9px;
+				height: 9px;
+				visibility: hidden;
+			}
+			
+			.changes[class~="expanded"] .changes-disclosure-button
+			{
+				background-image: url(disclosure-open.png);
+			}
+
+			@media screen and (-webkit-min-device-pixel-ratio: 2)
+			{
+				.changes-disclosure-button 
+				{
+					background-image: url(disclosure-closed@2x.png);
+				}
+
+				.changes[class~="expanded"] .changes-disclosure-button
+				{
+					background-image: url(disclosure-open@2x.png);
+				}
+			}
+			
+			ul
+			{
+				margin-top: 0.5em;
+				margin-bottom: 0.2em;
+				margin-left: 1em;
+				padding-left: 0px;
+				list-style-type: none;
+			}
+			
+			li.change
+			{
+				margin-bottom: 0.3em;
+			}
+			
+			li.change:before
+			{
+				display: marker;
+				vertical-align: -3px;
+				padding-right: 2px;
+			}
+			
+			li.change a.change-link
+			{
+				text-decoration: none;
+			}
+			
+			li.change p
+			{
+				margin-left: 24px;
+				margin-top: 3px;
+			}
+
+			li.change a.change-link, li.change p
+			{
+				color: #aaa;
+			}
+
+			.item:nth-child(even) li.change a.change-link, 
+			.item:nth-child(even) li.change p
+			{
+				color: #a5adb9;
+			}
+
+			li.change img
+			{
+				width: 12px;
+				height: 12px;
+				visibility: hidden;
+				margin-right: 2px;
+			}
+			
+			li.change
+			{
+				margin-bottom: 0.4em;
+				background-position: 0px 2px;
+				background-size: 12px 12px;
+				background-repeat: no-repeat;
+			}
+			
+			li.addition
+			{
+				background-image: url(added-marker.png);
+			}
+			
+			li.deletion
+			{
+				background-image: url(deleted-marker.png);
+			}
+
+			li.modification
+			{
+				background-image: url(modified-marker.png);
+			}
+
+			li.replacement
+			{
+				background-image: url(replaced-marker.png);
+			}
+
+			@media screen and (-webkit-min-device-pixel-ratio: 2)
+			{
+				li.addition
+				{
+					background-image: url(added-marker@2x.png);
+				}
+				
+				li.deletion
+				{
+					background-image: url(deleted-marker@2x.png);
+				}
+
+				li.modification
+				{
+					background-image: url(modified-marker@2x.png);
+				}
+
+				li.replacement
+				{
+					background-image: url(replaced-marker@2x.png);
+				}
+			}
+
+		  .change-name
+			{
+		  	font-weight: normal;
+		  	color: black;
+		  }
+
+			.change-path
+			{
+				word-break: break-all;
+			}
+			
+			.change-revision
+			{
+				color: black;
+			}
+			
+		  li.change a.change-link
+			{
+				color: #888;
+		  	padding: 1px;
+		  	padding-left: 6px;
+		  	padding-right: 6px;
+		  	text-decoration: none;
+				<? if ($self.controlSize == 0) ?>
+		  	-webkit-border-radius: 9px;
+				<? elseif ($self.controlSize == 1) ?>
+		  	-webkit-border-radius: 8px;
+				<? else ?>
+		  	-webkit-border-radius: 7px;
+				<? endif ?>
+		  }
+			
+			<? if ($self.selectionMode == 2) ?>
+
+		  li.change a.change-link
+			{
+				cursor: pointer;
+				border: 1px solid transparent;
+			}
+			
+		  li.change a.change-link:hover
+			{
+		  	border: solid 1px #999;
+		  	background-color: #999;
+		  }
+			
+		  li.change a.change-link:hover,
+			.item:nth-child(even) li.change a.change-link:hover
+			{
+		  	color: #ddd;
+			}
+
+		  li.change a.change-link:hover > .change-name
+			{
+		  	color: white;
+		  }
+
+			<? endif ?>
+			
+			/*
+			 ***************** Item Selected Styles *******************
+			 */
+			.item[class~="selected"]
+			{
+				border-top: 1px solid #2764c0;
+			}
+			
+			.item[class~="selected"] .item-inner
+			{
+				background-color: #1653aa;
+				background: -webkit-gradient(linear, left top, left bottom, from(#3875d7), to(#1653aa));
+			}
+
+			.item[class~="selected"] .item-message[overflow='yes']
+			{
+				border: 1px solid #96afd6;
+			}
+			
+			.item[class~="selected"] .button
+			{
+				border: 1px solid white;
+				background: white;
+				color: #1653aa;
+			}
+			
+			.item[class~="selected"] .button:active
+			{
+				border: 1px solid #96afd6;
+				background: #96afd6;
+			}
+
+			.item[class~="selected"], 
+			.item[class~="selected"] table,
+		  .item[class~="selected"] .change-name
+			{
+				color: white;
+			}
+			
+		  .item[class~="selected"] .disclosure-button
+			{
+				background-image: url(disclosure-closed-inverse.png);
+			}
+
+		  .item[class~="selected"] .disclosure-button[class~="expanded"]
+			{
+				background-image: url(disclosure-open-inverse.png);
+			}
+			
+			.item[class~="selected"] .item-info,
+			.item[class~="selected"] span
+			{
+				color: #96afd6;
+			}
+			
+			.item[class~="selected"] .item-message[overflow="yes"] .item-message-footer
+			{
+				border-top: 1px solid #96afd6;
+				background-color: rgba(22, 71, 142, 0.93);
+				background: -webkit-gradient(linear, left top, left bottom, 
+					from(rgba(23, 72, 143, 0.85)), to(rgba(15, 51, 105, 0.95)));
+			}
+			
+			.item[class~="selected"] .item-message-text a
+			{
+				color: #96afd6;
+			}
+			
+			/*
+			 ************** Change Selected Styles *****************
+			 */
+			li.change a.change-link[class~="selected"]
+			{
+				background-color: #3875d7;
+				border: 1px solid #3875d7;
+			}
+			
+			li.change a.change-link[class~="selected"],
+			.item:nth-child(even) li.change a.change-link[class~="selected"]
+			{
+				color: #b8cde5;
+			}
+
+			li.change a.change-link[class~="selected"] > .change-name
+			{
+				color: white;
+			}
+						
+			/* 
+			 **************** Page Button Styles *******************
+			 */			
+		  #footer
+			{
+				text-align: center;
+				padding: 2em;
+				
+				<? if ($self.showsPageButton != true) ?>
+				display: none;
+				<? endif ?>
+		  }
+			
+		  #page-button
+			{
+				display: inline;
+				margin: auto;
+		  	-webkit-border-radius: 5px;
+		  	padding: 0.3em 1.2em 0.3em 1.2em;
+		  }
+			
+			span.no-wrap
+			{
+				white-space: nowrap;
+			}
+			
+    </style>
+    <script language="javascript">
+		
+			/**
+			 * Writes debug output to the application.
+			 */
+			function debugLog(text)
+			{
+				window.application.debugLog(text);
+			}
+		
+			/**
+			 * Returns all child elements which are the specified CSS class.
+			 */
+			function getElementsByClassName(element, className)
+			{
+				var retVal = new Array();
+				var elements = element.getElementsByTagName("*");
+				
+				for(var i = 0;i < elements.length; i++)
+				{
+					if(elements[i].className.indexOf(" ") >= 0)
+					{
+						var classes = elements[i].className.split(" ");
+						
+						for(var j = 0;j < classes.length;j++)
+						{
+							if(classes[j] == className)
+								retVal.push(elements[i]);
+						}
+					}
+					else if(elements[i].className == className)
+					{
+						retVal.push(elements[i]);
+					}
+				}
+				
+				return retVal;
+			}
+			
+			/**
+			 * Returns the first child element which has the specified class.
+			 */
+			function getElementByClassName(element, className)
+			{
+				try
+				{
+					var elements = element.getElementsByTagName("*");
+					
+					for(var i = 0;i < elements.length; i++)
+					{
+						if(elements[i].className.indexOf(" ") >= 0)
+						{
+							var classes = elements[i].className.split(" ");
+							
+							for(var j = 0; j < classes.length;j++)
+							{
+								if(classes[j] == className)
+									return elements[i];
+							}
+						}
+						else if(elements[i].className == className)
+						{
+							return elements[i];
+						}
+					}
+				}
+				catch (e)
+				{
+					debugLog('getElementByClassName(' + element + ', ' + className + '): ' + e);
+					throw e;
+				}
+				
+				return null;
+			}
+			
+			/**
+			 * Append the specified HTML which contains item elements to the
+			 * top-level items DIV.
+			 *
+			 * This method is called from the host application.
+			 */
+	    function appendItems(html)
+	    {
+				try
+				{
+					var element = document.getElementById('items');
+					var range = document.createRange();
+
+					range.selectNodeContents(element);
+					range.collapse(false);
+
+					var fragment = range.createContextualFragment(html);
+					element.appendChild(fragment);
+
+					pageResized();
+				}
+				catch (e)
+				{
+					debugLog('appendItems(...): ' + e);
+					throw e;
+				}
+	    }
+			
+			/**
+			 * Replaces the contents of the top-level items DIV with the
+			 * specified HTML.
+			 *
+			 * This method is called from the host application.
+			 */
+			function replaceItems(html)
+			{
+				document.getElementById('items').innerHTML = html;
+				pageResized();
+			}
+			
+			/**
+			 * Returns the page's items <div> elements.
+			 */
+			function getItems()
+			{
+				var found = new Array();
+				var element = document.getElementById('items');
+
+				for (var i = 0; i < element.childNodes.length; i++)
+				{
+					if (element.childNodes[i].nodeName == 'DIV')
+						found.push(element.childNodes[i]);
+				}
+				
+				return found;
+			}
+			
+			/**
+			 * Returns the item element for the specified revision.
+			 */
+			function getItemWithRevision(revision)
+			{
+				var items = getItems();
+				
+				for (var i = 0; i < items.length; i++)
+				{
+					if (items[i].getAttribute('revision') == revision)
+						return items[i];
+				}
+				
+				return null;
+			}
+						
+			/**
+			 * Returns an array of change rows for the specified item.
+			 */
+			function getChangesInItem(item)
+			{
+				try
+				{
+					return getElementsByClassName(item, 'change');
+				}
+				catch (e)
+				{
+					debugLog('getChangesInItem(' + item + '): ' + e);
+					throw e;
+				}
+			}
+			
+			/*
+			 * Returns the 'change-link' <a> element in the specified change
+			 * table row.
+			 */
+			function getLinkInChange(change)
+			{
+				try
+				{
+					if (change.hasAttribute('path') == true)
+					{
+						var elements = change.getElementsByTagName("A");
+						
+						if (elements.length > 0)
+							return elements[0];
+					}
+
+					return null;
+				}
+				catch (e)
+				{
+					debugLog('getLinkInChange(' + change + '): ' + e);
+					throw e;
+				}
+			}
+			
+			/**
+			 * Returns the change element with the specified path in the
+			 * given revision.
+			 */
+			function getChangeInItemWithPath(item, path)
+			{
+				try
+				{
+					var changes = getChangesInItem(item);
+					
+					for (var i = 0; i < changes.length; i++)
+					{
+						if (changes[i].getAttribute('path') == path)
+							return changes[i];
+					}
+				}
+				catch (e)
+				{
+					debugLog('getChangeInItemWithPath(' + item + ', ' + path + '): ' + e);
+					throw e;
+				}
+				
+				return null;
+			}
+
+			/**
+			 * Returns the currently selected item, or null if no item is currently selected.
+			 */
+			function getSelectedItem()
+			{
+				try
+				{
+					return getElementByClassName(document.getElementById('items'), 'selected');
+				}
+				catch (e)
+				{
+					debugLog('getSelectedItem(): ' + e);
+					throw e;
+				}
+			}
+
+			/**
+			 * Returns the change element with the specified path in the
+			 * given revision.
+			 */
+			function getSelectedChange()
+			{
+				try
+				{
+					var items = getItems();
+					
+					for (var i = 0; i < items.length; i++)
+					{
+						var changes = getChangesInItem(items[i]);
+						
+						for (var j = 0; j < changes.length; j++)
+						{
+							var link = getLinkInChange(changes[j]);
+							
+							if (link != null && link.className.indexOf('selected') != -1)
+								return changes[j];
+						}
+					}
+				}
+				catch (e)
+				{
+					debugLog('getSelectedChange(): ' + e);
+					throw e;
+				}
+				
+				return null;
+			}
+
+			/**
+			 * Selects the specified item element. Specify -1 to deselect the currently
+			 * selected item.
+			 */
+			function selectItem(revision)
+			{
+				try
+				{
+					var previousItem = getSelectedItem();
+					var item = getItemWithRevision(revision);
+					
+					if (item != previousItem)
+					{
+						if (previousItem != null)
+							previousItem.className = 'item';
+
+						if (item != null)
+							item.className = 'item selected';
+					}
+				}
+				catch (e)
+				{
+					debugLog('selectItem(' + revision + '):' + e);
+					throw e;
+				}
+			}
+
+			/**
+			 * Selects the specified item element. Specify -1 to deselect the currently
+			 * selected item.
+			 */
+			function selectChange(path, revision)
+			{
+				try
+				{
+					var previousChange = getSelectedChange();
+					
+					if (previousChange != null)
+						getLinkInChange(previousChange).className = 'change-link';
+					
+					if (revision != -1)
+					{
+						var item = getItemWithRevision(revision);
+						var change = getChangeInItemWithPath(item, path);
+						
+						if (change != null)
+							getLinkInChange(change).className = 'change-link selected';
+					}
+				}
+				catch (e)
+				{
+					debugLog('selectChange(' + path + ', ' + revision + '): ' + e);
+					throw e;
+				}
+			}
+			
+			/**
+			 * Shows or hides the page button which is displayed at the bottom
+			 * of the item list.
+			 */
+			function showPageButton(visible)
+			{
+				var element = document.getElementById('footer');
+				
+				if (visible == true)
+					element.style.display = 'block';
+				else
+					element.style.display = 'none';
+			}
+			
+			/**
+			 * Sets the title of the page button which is displayed at the bottom
+			 * of the item list.
+			 */
+			function setPageButtonTitle(title)
+			{
+				document.getElementById('page-button').innerHTML = title;
+			}
+			
+			/**
+			 * Toggles the expansion status of the specified item-message element.
+			 */
+			function toggleMessageExpansion(element)
+			{
+				if (element.hasAttribute('expanded') == false || 
+						element.getAttribute('expanded') == 'no')
+				{
+					element.setAttribute('expanded', 'yes');
+				}
+				else
+				{
+					element.setAttribute('expanded', 'no');
+				}
+			}
+
+			/**
+			 * Expands the changes for the specified revision.
+			 */
+			function expandChanges(revision)
+			{
+				try
+				{
+					var item = getItemWithRevision(revision);
+					
+					var changes = getElementByClassName(item, 'changes');
+					var contents = getElementByClassName(changes, 'changes-contents');
+					
+					if (contents.style.display != 'block')
+					{
+						contents.style.display = 'block';
+						changes.className = 'changes expanded';
+					}
+				}
+				catch (e)
+				{
+					debugLog('expandChanges(' + revision + '): ' + e);
+					throw e;
+				}
+			}
+			
+			/**
+			 * Collapses the changes for the specified revision.
+			 */
+			function collapseChanges(revision)
+			{
+				try
+				{
+					var item = getItemWithRevision(revision);
+					
+					var changes = getElementByClassName(item, 'changes');
+					var contents = getElementByClassName(changes, 'changes-contents');
+
+					if (contents.style.display != 'none')
+					{
+						contents.style.display = 'none';
+						changes.className = 'changes';
+					}
+				}
+				catch (e)
+				{
+					debugLog('collapseChanges(' + revision + '): ' + e);
+					throw e;
+				}
+			}
+		
+			/**
+			 * Determines whether the changes are expanded for the specified revision.
+			 */
+			function isChangesExpanded(revision)
+			{
+				try
+				{
+					var item = getItemWithRevision(revision);
+
+					var changes = getElementByClassName(item, 'changes');
+					var contents = getElementByClassName(changes, 'changes-contents');
+					
+					if (contents.style.display == 'block')
+						return true;
+					else
+						return false;
+				}
+				catch (e)
+				{
+					debugLog('isChangesExpanded(' + revision + '): ' + e);
+					throw e;
+				}
+			}
+			
+			/**
+			 * Toggles the expanded state of the changes section for the specified revision.
+			 */
+			function toggleChangesExpansion(revision)
+			{
+				try
+				{
+					if (isChangesExpanded(revision))
+						collapseChanges(revision);
+					else
+						expandChanges(revision);
+				}
+				catch (e)
+				{
+					debugLog('toggleChangesExpansion(' + revision + '): ' + e);
+					throw e;
+				}
+			}
+			
+			/**
+			 * Determines whether the checkbox is checked for the specified revision.
+			 */
+			function isChecked(revision)
+			{
+				try
+				{
+					var checkbox = document.getElementById('checkbox' + revision);
+					
+					if (checkbox != null)
+						return checkbox.checked;
+					else
+						return false;
+				}
+				catch (e)
+				{
+					debugLog('isChecked(' + revision + '): ' + e);
+					throw e;
+				}
+			}
+			
+			/**
+			 * Sets the checked state of the checkbox for the specified revision.
+			 */
+			function setChecked(checked, revision)
+			{
+				try
+				{
+					var checkbox = document.getElementById('checkbox' + revision);
+					
+					if (checkbox != null)
+						checkbox.checked = checked;
+				}
+				catch (e)
+				{
+					debugLog('setChecked(' + revision + '): ' + e);
+					throw e;
+				}
+			}
+			
+			function showButton(button, revision, visible)
+			{
+				try
+				{
+					var span = document.getElementById(button + revision);
+					
+					if (span != null)
+					{
+						if (visible == true)
+							span.style.display = 'inline';
+						else
+							span.style.display = 'none';
+					}
+				}
+				catch (e)
+				{
+					debugLog('showButton(' + button + ', ' + revision + '): ' + e);
+					throw e;
+				}
+			}
+			
+			function showBadge(badge, revision, visible)
+			{
+				try
+				{
+					var span = document.getElementById(badge + revision);
+					
+					if (span != null)
+					{
+						if (visible == true)
+							span.style.display = 'inline';
+						else
+							span.style.display = 'none';
+					}
+				}
+				catch (e)
+				{
+					debugLog('showBadge(' + badge + ', ' + revision + '): ' + e);
+					throw e;
+				}
+			}
+
+			/**
+			 * Dynamically updates the margin between the image and text components
+			 * of the overlay depending on the presence of both.
+			 */
+			function updateOverlayContentSpacing()
+			{
+				try
+				{
+					var span = document.getElementById('overlay-title');
+					var img = document.getElementById('overlay-img');
+					
+					if (span.style.display != 'none' && img.style.display != 'none')
+						img.style.marginRight = '0.5em';
+					else
+						img.style.marginRight = '0';
+				}
+				catch (e)
+				{
+					debugLog('updateOverlayContentSpacing(): ' + e);
+					throw e;
+				}
+			}
+			
+			/**
+			 * Sets the title text displayed in the overlay.
+			 */			
+			function setOverlayTitle(title)
+			{
+				try
+				{
+					var overlay = document.getElementById('overlay');
+					
+					if (overlay != null)
+					{
+						var span = document.getElementById('overlay-title');
+						
+						if (span != null)
+						{
+							if (title != null)
+							{
+								span.style.display = 'inline';
+								span.innerHTML = title;
+							}
+							else
+							{
+								span.style.display = 'none';
+							}
+						}
+					}
+					
+					updateOverlayContentSpacing();
+				}
+				catch (e)
+				{
+					debugLog('setOverlayTitle(' + title + '): ' + e);
+					throw e;
+				}
+			}
+			
+			/**
+			 * Sets the image displayed in the overlay. Specify null to not display an image.
+			 */
+			function setOverlayImage(image)
+			{
+				try
+				{
+					var overlay = document.getElementById('overlay');
+					
+					if (overlay != null)
+					{
+						var img = document.getElementById('overlay-img');
+						
+						if (img != null)
+						{
+							if (image != null)
+							{
+								img.src = image;
+								img.style.display = 'inline';
+							}
+							else
+							{
+								img.style.display = 'none';
+							}
+						}
+					}
+					
+					updateOverlayContentSpacing();
+				}
+				catch (e)
+				{
+					debugLog('setOverlayImage(' + image + '): ' + e);
+					throw e;
+				}
+			}
+			
+			/**
+			 * Overlay opacity-related variables.
+			 */
+			var overlayFadeInterval = 10;
+			var overlayFadeStep = 0.2;
+			var overlayOpacity = 0.0;
+			var overlayFadeTimer = 0;
+			
+			/**
+			 * Timeout function to fade the overlay in by one step.
+			 */
+			function overlayFadeIn()
+			{
+				var overlay = document.getElementById('overlay');
+				
+				if (overlay.style.display == 'none')
+				{
+					overlayOpacity = 0.0;
+					overlay.style.display = 'block';
+				}
+
+				overlayOpacity += overlayFadeStep;
+				overlay.style.opacity = overlayOpacity;
+				
+				if (overlayOpacity < 1)
+					overlayFadeTimer = setTimeout('overlayFadeIn()', overlayFadeInterval);
+				else
+					overlayFadeTimer = 0;
+			}
+
+			/**
+			 * Timeout function to fade the overlay out by one step.
+			 */
+			function overlayFadeOut()
+			{
+				var overlay = document.getElementById('overlay');
+				
+				overlayOpacity -= overlayFadeStep;
+				overlay.style.opacity = overlayOpacity;
+				
+				if (overlayOpacity > 0)
+				{
+					overlayFadeTimer = setTimeout('overlayFadeOut()', overlayFadeInterval);
+				}
+				else
+				{
+					overlay.style.display = 'none';
+					overlayFadeTimer = 0;
+				}
+			}
+
+			/**
+			 * Shows or hides the overlay. The transition can optionally be faded.
+			 */
+			function showOverlay(visible, fade)
+			{
+				try
+				{
+					var overlay = document.getElementById('overlay');
+					
+					if (overlay != null)
+					{
+						clearTimeout(overlayFadeTimer);
+					
+						if (fade == true)
+						{	
+							if (visible == true)
+							{
+								overlay.style.display = 'block';
+								overlayFadeTimer = setTimeout('overlayFadeIn()', overlayFadeInterval);
+							}
+							else
+							{
+								overlayFadeTimer = setTimeout('overlayFadeOut()', overlayFadeInterval);
+							}
+						}
+						else
+						{
+							if (visible == true)
+							{
+								overlay.style.opacity = overlayOpacity = 1;
+								overlay.style.display = 'block';
+							}
+							else
+							{
+								overlay.style.opacity = overlayOpacity = 0;
+								overlay.style.display = 'none';
+							}
+						}
+					}
+				}
+				catch (e)
+				{
+					debugLog('showOverlay(' + title + ', ' + image + '): ' + e);
+					throw e;
+				}
+			}
+
+			/**
+			 * Handles resize for an item element.
+			 */
+			function itemResized(item)
+			{
+				try
+				{
+					var outer = getElementByClassName(item, 'item-message');
+					var inner = getElementByClassName(outer, 'item-message-text');
+
+					var outerHeight = outer.offsetHeight;
+					var innerHeight = inner.offsetHeight;
+
+					if (innerHeight >= outerHeight)
+					{
+						if (outer.getAttribute('overflow') != 'yes')
+							outer.setAttribute('overflow', 'yes');
+					}
+					else
+					{
+						if (outer.getAttribute('overflow') != 'no' && 
+								outer.getAttribute('expanded') != 'yes')
+						{
+							outer.setAttribute('overflow', 'no');
+						}
+					}
+				}
+				catch (e)
+				{
+					debugLog('itemResized(' + item + '): ' + e);
+					throw e;
+				}
+			}
+			
+			/**
+			 * Gets the last partially visible item in the document.
+			 */
+			function getLastPartiallyVisibleItem()
+			{
+				var items = getItems();
+				
+				for (var i = 0; i < items.length; i++)
+				{
+					var item = items[i];
+					
+					if ((item.offsetTop + item.offsetHeight) > window.pageYOffset)
+						return item;
+				}
+				
+				return null;
+			}
+
+			/**
+			 * Gets the entirely visible item in the document
+			 */
+			function getFirstEntirelyVisibleItem()
+			{
+				var items = getItems();
+				
+				for (var i = 0; i < items.length; i++)
+				{
+					var item = items[i];
+					
+					if (item.offsetTop > window.pageYOffset)
+						return item;
+				}
+				
+				return null;
+			}
+			
+			/**
+			 * Required minimum height of the fixed-position date tab.
+			 */
+			var dateTabHeight = 21;
+			
+			/**
+			 * Updates the position and visibility of the fixed position
+			 * date tab.
+			 */
+			function updateDateTab()
+			{
+				try
+				{
+  				var tab = document.getElementById('date-tab');
+				
+					if (tab == null)
+						return;
+				
+  				var vis = getFirstEntirelyVisibleItem();
+  				var obs = getLastPartiallyVisibleItem();
+				
+  				var date = null;
+				
+  				if (vis != null && obs != null)
+  				  date = getElementByClassName(vis, 'date');
+				
+				  if (date != null)
+				  {
+    				if (date.style.display != 'none')
+    				{
+    					var h = (obs.offsetTop + obs.offsetHeight) - window.pageYOffset;
+
+    					if (h < dateTabHeight)
+    						tab.style.top = h - dateTabHeight;
+    					else
+    						tab.style.top = -1;
+
+    					tab.innerHTML = getElementByClassName(obs, 'date').innerHTML;
+    				}
+    				else
+    				{
+    					tab.style.top = -1;
+    					tab.innerHTML = date.innerHTML;
+    				}
+				  }
+				
+  				if (window.pageYOffset == 0)
+  					tab.style.display = 'none';
+  				else
+  					tab.style.display = 'block';
+				}
+				catch (e)
+				{
+					debugLog('updateDateTab(): ' + e);
+					throw e;
+				}
+			}
+
+			/**
+			 * Show/hide date separators after loading.
+			 */
+			function updateDateSeparators()
+			{
+				try
+				{
+					var items = getItems();
+					var previousDate = null;
+				
+					for (var i = 0; i < items.length; i++)
+					{
+						var item = items[i];
+						var date = item.getAttribute('date');
+						
+						if (date != null)
+						{
+							var separator = getElementByClassName(item, 'date');
+
+							if (date != previousDate)
+								separator.style.display = 'block';
+							else
+								separator.style.display = 'none';
+
+							previousDate = date;
+						}
+					}
+					
+					updateDateTab();
+				}
+				catch (e)
+				{
+					debugLog('updateDateSeparators(): ' + e);
+					throw e;
+				}
+			}
+						
+			/**
+			 * Preloaded images to prevent initial rendering without images.
+			 */
+			var disclosureOpenImage = new Image(); disclosureOpenImage.src = "disclosure-open.png";
+			var disclosureOpenInverseImage = new Image(); disclosureOpenInverseImage.src = "disclosure-open-inverse.png";
+			var disclosureClosedImage = new Image(); disclosureClosedImage.src = "disclosure-closed.png";
+			var disclosureClosedInverseImage = new Image(); disclosureClosedInverseImage.src = "disclosure-closed-inverse.png";
+			
+			var disclosureOpen2xImage = new Image(); disclosureOpen2xImage.src = "disclosure-open@2x.png";
+			var disclosureOpenInverse2xImage = new Image(); disclosureOpenInverse2xImage.src = "disclosure-open-inverse@2x.png";
+			var disclosureClosed2xImage = new Image(); disclosureClosed2xImage.src = "disclosure-closed@2x.png";
+			var disclosureClosedInverse2xImage = new Image(); disclosureClosedInverse2xImage.src = "disclosure-closed-inverse@2x.png";
+
+			var addedImage = new Image(); addedImage.src = "added-marker.png";
+			var deletedImage = new Image(); deletedImage.src = "deleted-marker.png";
+			var modifiedImage = new Image(); modifiedImage.src = "modified-marker.png";
+			var replacedImage = new Image(); replacedImage.src = "replaced-marker.png";
+			
+			var added2xImage = new Image(); added2xImage.src = "added-marker@2x.png";
+			var deleted2xImage = new Image(); deleted2xImage.src = "deleted-marker@2x.png";
+			var modified2xImage = new Image(); modified2xImage.src = "modified-marker@2x.png";
+			var replaced2xImage = new Image(); replaced2xImage.src = "replaced-marker@2x.png";
+			
+			var dateSeparatorImage = new Image(); dateSeparatorImage.src = "log-date-separator.png";
+			var dateSeparatorTabLeftImage = new Image(); dateSeparatorTabLeftImage.src = "log-date-separator-tab-left.png";
+			var dateSeparatorTabRightImage = new Image(); dateSeparatorTabRightImage.src = "log-date-separator-tab-right.png";
+
+			var dateSeparator2xImage = new Image(); dateSeparator2xImage.src = "log-date-separator@2x.png";
+			var dateSeparatorTabLeft2xImage = new Image(); dateSeparatorTabLeft2xImage.src = "log-date-separator-tab-left@2x.png";
+			var dateSeparatorTabRight2xImage = new Image(); dateSeparatorTabRight2xImage.src = "log-date-separator-tab-right@2x.png";
+
+			var messageExpandButtonImage = new Image(); messageExpandButtonImage.src = "message-expand-button.png";
+			var messageCollapseButtonImage = new Image(); messageCollapseButtonImage.src = "message-collapse-button.png";
+
+			var messageExpandButton2xImage = new Image(); messageExpandButton2xImage.src = "message-expand-button@2x.png";
+			var messageCollapseButton2xImage = new Image(); messageCollapseButton2xImage.src = "message-collapse-button@2x.png";
+
+			<? foreach ($badge in $self.badges) ?>
+			<? if ($badge.imageName != null) ?>var badgeImage<?= @@index ?> = new Image(); badgeImage<?= @@index ?>.src = "<?= $badge.imageName ?>";<? endif ?>
+			<? endforeach ?>
+
+			/**
+			 * Page's onresize handler.
+			 */
+			function pageResized()
+			{
+				var items = getItems();
+				
+				for (var i = 0; i < items.length; i++)
+					itemResized(items[i]);
+			}
+			
+			/**
+			 * Page's onscroll handler.
+			 */
+			function pageScrolled()
+			{
+				updateDateTab();
+			}
+
+    </script>
+	</head>
+	<body onresize="javascript:pageResized();" onscroll="javascript:pageScrolled();">
+				
+		<? if ($self.showsDateSeparators == true) ?>
+		<div id="date-tab" class="date fixed">
+			<h1><span></span></h1>
+		</div>
+		<? endif ?>
+		
+		<div id="items">
+		</div>
+		
+		<div id="footer">
+			<span class="button" id="page-button" onclick="javascript:window.application.pageButtonClicked()"><?= $self.pageButtonTitle ?></span>
+		</div>
+		
+		<div id="overlay">
+			<div id="overlay-bezel">
+				<img id="overlay-img" width="16" height="16"/><span id="overlay-title"/>
+			</div>
+		</div>
+		
+	</body>
+</html>

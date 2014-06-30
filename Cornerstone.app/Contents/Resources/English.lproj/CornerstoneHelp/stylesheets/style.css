@@ -1,0 +1,292 @@
+
+body {
+	font-family: "Lucida Grande";
+	font-size: 13px;
+	background-color: white;
+	text-align: left;
+	color: #404040;
+	padding: 0.5em;
+	padding-top: 2.5em;
+}
+
+a:link { 
+  text-decoration: none;
+  color: #2962ad;
+}
+
+a:hover {
+  color: #2962ad;
+  text-decoration: underline;
+}
+
+a:active {
+  color: #000066;
+}
+  
+a:visited {
+  color: #000066;
+  text-decoration: none;
+}
+
+h1 {
+	font-size: 15pt;
+}
+
+h2 {
+	margin-top: 1.5em;
+	font-size: 11pt;
+}
+
+h3 {
+	margin-top: 1.5em;
+	font-size: 10pt;
+}
+
+/**
+ * This little negative margin hack prevents headings from 
+ * disappearing beneath the fixed header when linked to.
+ */
+h2 a, h3 a {
+	margin-top: -2.5em;
+	padding-top: 3em;
+}
+
+h2 a[id]:hover, h3 a[id]:hover {
+  text-decoration: none;
+	color: #404040;
+}
+
+code, pre {
+	font-size: 9pt;
+	font-family: "Monaco", monospace;
+	font-weight: normal;
+}
+
+img {
+  border: none;
+  vertical-align: -15%;
+}
+
+hr {
+	border: none;
+	height: 1px;
+	background-color: #e9e9e9;
+}
+
+hr.center-break {
+	width: 20%;
+}
+
+li {
+	margin-top: 0.5em;
+}
+
+ul.plain {
+  list-style: none;
+  margin-left: 0;
+  padding-left: 0;
+}
+
+ol.alphabetical {
+	list-style-type: lower-alpha;
+}
+
+.term {
+	font-style: italic;
+	font-weight: bold;
+}
+
+.uiref {
+	font-weight: bold;
+	white-space: nowrap;
+}
+
+.key {
+	font-weight: bold;
+	white-space: nowrap;
+}
+
+.small-key {
+	font-weight: normal;
+	font-size: 75%;
+	color: #aaa;
+}
+
+.small-key:before {
+	content: '(';
+}
+
+.small-key:after {
+	content: ')';
+}
+
+.box {
+	margin-top: 1.5em;
+	margin-bottom: 1.5em;
+	padding-top: 0.5em;
+	padding-left: 1.5em;
+	padding-right: 1.5em;
+	padding-bottom: 0.5em;
+}
+
+.box h2 {
+	margin-top: 1em;
+}
+
+.links {
+	background-color: #f9f9f9;
+	border: #bfbfbf 1px solid;
+	-webkit-border-radius: 5px;
+	-webkit-box-shadow: 0px 1px 3px #d0d0d0;
+}
+
+.note {
+	background-color: #f9f9f9;
+	border: #bfbfbf 1px solid;
+	-webkit-border-radius: 5px;
+	-webkit-box-shadow: 0px 1px 3px #d0d0d0;
+}
+
+.task {
+	background-color: #f5f5ff;
+	border: #bfbfdf 1px solid;
+	-webkit-border-radius: 6px;
+	-webkit-box-shadow: 0px 1px 3px #d0d0d0;
+}
+
+.script {
+	background-color: #f9f9f9;
+	border: #bfbfbf 1px solid;
+	-webkit-border-radius: 5px;
+	-webkit-box-shadow: 0px 1px 3px #d0d0d0;
+}
+
+.warning {
+	padding-left: 37px;
+	background-color: #fcf8ec;
+	background-image: url(../images/warning.png);
+	background-repeat: no-repeat;
+	background-position:12px 1.5em;
+	border: #bfbfbf 1px solid;
+	-webkit-border-radius: 5px;
+	-webkit-box-shadow: 0px 1px 3px #d0d0d0;
+}
+
+.inset {
+	margin-left: 1em;
+}
+
+.qanda {
+	border: #bfbfbf 1px solid;
+	-webkit-border-radius: 5px;
+	-webkit-box-shadow: 0px 1px 3px #d0d0d0;
+}
+
+.question {
+	font-style: italic;
+}
+
+.question:before {
+	content: 'Q:';
+	font-size: 1.5em;
+	font-weight: bold;
+	padding-right: 0.5em;
+}
+
+.answer:before {
+	content: "A:";
+	font-size: 1.5em;
+	font-weight: bold;
+	font-style: italic;
+	padding-right: 0.5em;
+}
+
+img.screenshot {
+	border: 1px solid #b0b0b0;
+	padding: 4px;
+	background-color: white;
+	-webkit-border-radius: 5px;
+	-webkit-box-shadow: 0px 1px 3px #d0d0d0;
+}
+
+div#navbar {
+	position: fixed;
+	left: 0;
+	top: 0;
+	width: 100%;
+	padding: 0.6em;
+	background-color: #efefef;
+	border-top: 1px solid #fcfcfc;
+	border-bottom: 1px solid #bbb;
+	font-size: 8pt;
+}
+
+div#navbar a:link { 
+  text-decoration: none;
+  color: #3a3a3a;
+}
+
+div#navbar a:hover {
+  text-decoration: underline;
+}
+
+div#navbar #home:before {
+	content: "Home";
+}
+
+div#navbar #home {
+	float: left;
+}
+
+div#navbar #next {
+	float: right;
+	display: block;
+	text-align: right;
+	margin-right: 1.3em;
+}
+
+div#navbar #next:after {
+	content: "Next »";
+}
+
+table.summary {
+	margin: 0px;
+}
+
+table.summary td:first-child {
+	font-weight: bold;
+	text-align: right;
+	white-space: nowrap;
+	padding-right: 0.3em;
+}
+
+table.summary td:first-child:after {
+	content: ":";
+}
+
+table.summary td {
+	vertical-align: baseline;
+}
+
+table.summary td p {
+	margin: 0;
+}
+
+table.summary td p+p {
+	margin-top: 0.3em;
+}
+
+/**
+ * Print-specific styles
+ */
+@media print {
+	body {
+		margin: 3em;
+		padding-top: 1em;
+	}
+	
+	div#navbar {
+		display: none;
+	}
+}
+

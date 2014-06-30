@@ -1,0 +1,91 @@
+{
+	id                      : 'objcpp';
+	title                   : 'Objective C/C++';
+	match:
+	[ 
+		uti                   : 'public.c-header',
+		uti                   : 'public.objective-c-source',
+		uti                   : 'public.objective-c-plus-plus-source',
+		extension							: 'objc',
+		extension							: 'pch',
+		regex:
+		{
+			pattern							: @'(@protocol|@interface|@class|@implementation|@begin|@end|@selector|IBOutlet)';
+			case-insensitive		: no;
+		},
+	];
+	import:									[ 'cpp' ];
+
+	rules:
+	[
+		whitespace-rule:
+		{
+		},
+		
+		ref										: 'comment.multiline.cpp',
+		ref										: 'comment.singleline.cpp',
+		ref										: 'keyword.cpp',
+	
+		word-rule:
+		{
+			id                  : 'keyword.objc';
+			case-insensitive		: no;
+			words:          		[
+														'@protocol', '@class', '@interface', '@public', '@protected', 
+														'@private', '@begin', '@end', '@implementation', '@selector', 
+														'@try', '@catch', '@finally', '@throw', '@protocol', '@synchronized', 
+														'@property', '@synthesize', '@dynamic',
+														'@optional', '@required',
+														'@defs', '@encode',
+														'_cmd', 'nil', 'Nil', 'id', 'BOOL', 'SEL', 'YES', 'NO',
+														'in', 'out', 'bycopy', 'byref', 'oneway',
+														'self', 'super',
+														'IBOutlet'
+													];
+		},
+	
+		ref										: 'keyword.preprocessor.cpp',
+		ref										: 'symbol.preprocessor.cpp',
+		ref										: 'keyword.preprocessor.include.cpp',
+		ref										: 'keyword.preprocessor.pragma.cpp',
+	
+		text-literal-rule:
+		{
+			id                  : 'literal.string.objcpp';
+			open-sequence       : @'@"';
+			close-sequence      : @'"';
+			escape-char         : @'\';
+			multiline          	: false;
+			quoted-tokens       : true;
+
+			rules:
+			[
+				whitespace-rule:
+				{
+				},
+				
+				regex-rule:
+				{
+					id                : 'symbol.objc.formatting.token';
+					case-insensitive  : no;
+					pattern           : @'%@';
+				},
+
+				ref									: 'symbol.cpp.escaped.character',
+				ref									: 'symbol.cpp.formatting.token',
+
+				default-rule:
+				{
+				},
+			];
+		},
+
+		ref										: 'literal.string.cpp',
+		ref										: 'literal.char.cpp',
+		ref										: 'literal.number.cpp',
+		
+		default-rule:
+		{	
+		}
+	];
+};

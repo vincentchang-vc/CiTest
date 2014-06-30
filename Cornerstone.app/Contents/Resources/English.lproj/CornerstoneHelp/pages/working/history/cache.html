@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>	
+	<link href="../../../stylesheets/style.css" rel="stylesheet" media="all" />
+	<title>Downloading and Caching Your Repository's History</title>
+</head>
+<body>
+	<div id="navbar">
+		<a id="home" href="../index.html"></a>
+	</div>
+
+  <h1>Downloading and Caching Your Repository's History</h1>
+  <p>The good thing about historical data is that it doesn't change and this makes it an excellent candidate for caching.</p>
+  <p>Cornerstone can download and cache your repository's log to greatly speed up browsing and querying activities.</p>
+  <p>However, this behavior may not always be appropriate. For example, downloading huge repositories (e.g. the Apache.org repository has over 500,000 revisions) may not be feasible. Or you may not intend to repeatedly browse a repository's history and want to avoid the overhead of caching the log on your Mac's hard drive.</p>
+  <p>For whatever reason, you may not want Cornerstone to cache your repository's log.</p>
+  <p>Cornerstone notices when a repository's log is accessed for the first time and asks how the log should be accessed:</p>
+  <p><img src="../../../images/history-download-prompt.png"/></p>
+  
+  <div class="box task">
+  	<ul class="plain">
+  		<li>
+  			<h3>Never For This Repository</h3>
+  			<p>All queries will be made directly against the repository and no information is cached. This is appropriate for very large or infrequently accessed repositories.</p>
+  			<p>This selection is permanent.</p>
+  		</li>
+  		<li>
+  			<h3>Not Now</h3>
+  			<p>Subsequent queries during the current application session will be made directory against the repository. No Information will be cached. This is appropriate when you might want to download and cache the repository's history in the future but do not want to do so at the current time.</p>
+  			<p>This selection is temporary. You will be asked again for this repository next time the application is started.</p>
+  		</li>
+  		<li>
+  			<h3>Download</h3>
+  			<p>The history is downloaded and cached in its entirety. This may take some time for large repositories, depending on server load and network connection speeds.</p>
+  			<p>Future history access will only download the latest log entries, resulting in the fastest browsing and query performance at the expense of the diskspace required to cache the history data.</p>
+  		</li>
+  	</ul>
+  </div>
+  
+	<h2>Cache Disk Usage</h2>
+	<p>On average, each revision will take between 1KB and 2.5KB of disk space, depending on the verbosity of the log messages and change set size (i.e. number of files committed with each revision).</p>
+	<p>Small repositories (up to 5,000 revisions) will generally require less than 10MB of space.</p>
+	<p>Larger repositories with tens of thousands of revisions can require significant disk space. For example, the WebKit repository (currently with over 40,000 revisions) requires slightly over 100MB of space.</p>
+
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>	
+	<link href="../../../../stylesheets/style.css" rel="stylesheet" media="all" />
+	<title>The Timeline Inspector</title>
+	<style type="text/css">
+		table {
+			border-collapse: collapse;
+			font-size: 9pt;
+			background-color: #fcfcfc;
+		}
+		table td {
+			border: 1px solid #dfdfdf;
+			vertical-align: top;
+			padding: 0.4em;
+		}
+	</style>
+</head>
+<body>
+	<div id="navbar">
+		<a id="home" href="index.html"></a>
+		<a id="next" href="comparing.html"></a>
+	</div>
+
+  <h1>The Timeline Inspector</h1>
+  <p>The timeline inspector displays information about the revision selected in the timeline view. The inspector has two tabs: the <span class="uiref">Information</span> and <span class="uiref">Changes</span> tabs.</p>
+  
+  <h2>Information Tab</h2>
+  <p>The <span class="uiref">Information</span> tab displays the date, author and log comment of the selected revision:</p>
+  <p><img class="screenshot" src="../../../../images/timeline-inspector-information.png"/></p>
+  
+  <h3>Issue Number Hyperlinks</h3>
+  <p>If issue tracking support is enabled (see <a href="../../../integration/issue-tracking.html">Integrating with Issue Tracking Systems</a> for more information), matching issue numbers are displayed as hyperlinks. Clicking on the hyperlink will open a browser window on the issue's page in the issue tracking system.</p>
+  
+  <h2>Changes</h2>
+  <p>The changes tab lists the files which were changed in this revision:</p>
+  <p><img class="screenshot" src="../../../../images/timeline-inspector-changes.png"/></p>
+  <p>You can use the search field to find files with matching names or paths.</p>
+  
+  <div class="box note">
+  	<p> If an item was branched, (i.e. copied or moved), the source revision and path are displayed at the bottom of the inspector when the item is selected in the change list.</p>
+  </div>
+
+  <h3>Change Icons</h3>
+  <p>The following icons are used in the change table to represent the type of change committed:</p>
+  <table>
+		<tr>
+			<td><img src="../../../../images/added-marker.png"/></td>
+			<td>The item was imported or branched.</td>
+		</tr>
+		<tr>
+			<td><img src="../../../../images/deleted-marker.png"/></td>
+			<td>The item was deleted. If the item was branched in the same revision then this indicates a move or rename operation.</td>
+		</tr>
+		<tr>
+			<td><img src="../../../../images/modified-marker.png"/></td>
+			<td>The item's contents or properties were modified.</td>
+		</tr>
+		<tr>
+			<td><img src="../../../../images/replaced-marker.png"/></td>
+			<td>The item was replaced, i.e. removed and added in the same revision.</td>
+		</tr>
+  </table>
+    
+</body>
+</html>

@@ -1,0 +1,20 @@
+Please provide a detailed description of the issue you have encountered and the steps required to reproduce it (i.e. how you cause the problem to be manifested).
+<? if ($sysInfo != null) ?>
+System Information
+==================
+
+Including the following system information with your support request will be extremely helpful in aiding us find a solution.
+
+Version          : <?= $sysInfo.app.version ?>
+Operating System : <?= $sysInfo.software.os.type ?> <?= $vars.software.os.version ?>
+Language         : <?= $sysInfo.software.language ?>
+Model            : <?= $sysInfo.hardware.model ?>
+Memory           : <?= $sysInfo.hardware.memory ?>
+CPU Type         : <?= $sysInfo.hardware.cpu.type ?>
+CPU Sub-Type     : <?= $sysInfo.hardware.cpu.subtype ?>
+CPU Speed        : <?= $sysInfo.hardware.cpu.speed ?>
+CPU Cores        : <?= $sysInfo.hardware.cpu.cores ?>
+<? endif ?>
+Thank you!
+
+Zennaware
