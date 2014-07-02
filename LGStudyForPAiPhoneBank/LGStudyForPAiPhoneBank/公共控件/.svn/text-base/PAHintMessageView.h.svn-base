@@ -1,0 +1,42 @@
+//
+//  PAHintMessageView.h
+//  PAEBank
+//
+//  Created by  xia on 11-8-11.
+//  Copyright 2011 __MyCompanyName__. All rights reserved.
+//
+
+/*
+    弹创新网银公告界面
+*/
+#import <Foundation/Foundation.h>
+
+@interface PAHintMessageView : UIAlertView<UIWebViewDelegate> {
+	NSString *firstString;
+	NSString *secondString;
+	NSString *myMessage;
+	id callBackDelegate;
+	
+	UIButton *firstButton;
+	UIButton *secondButton;
+	
+	int flashTimeCount;
+	
+	UIWebView* curWebView;
+}
+
+@property (nonatomic, retain) NSString *firstString;
+@property (nonatomic, retain) NSString *myMessage;
+@property (nonatomic, retain) id callBackDelegate;
+
+- (id)initWithFistButton:(NSString*)firstStr
+				 Message:(NSString*)theMessage 
+				Delegate:(id)theDelegate;
+
+/* 
+ 公告格式数据处理
+ @ 返回封装好的数据格式
+*/
++(NSString*)handlePopHintMegData:(NSDictionary*)appDic;
+
+@end

@@ -1,0 +1,35 @@
+//
+//  Sqlite3Operation.h
+//  WebViewCacheDemo
+//
+//  Created by coson on 13-4-23.
+//  Copyright (c) 2013年 coson. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+#import <sqlite3.h>
+#import "LoadingHistoryInfo.h"
+
+@interface Sqlite3Operation : NSObject
+{
+    sqlite3 * db;
+}
+
++(Sqlite3Operation*)share;
+
+//创建数据库，不存在，则创建
+-(BOOL)open;
+//添加一条下载数据
+-(BOOL)insertOneLoadingHistory:(LoadingHistoryInfo*)marker;
+//获得二维码表中所有数据
+-(void)getLoadingHistoryInfo:(NSMutableArray*)HistoryArray;
+//获得二维码最新的一条数据
+-(int)getLastLoadingHistory;
+//删除一条二维码数据
+-(void)deleteOneLoadingHistory:(int)ID;
+//删除所有二维码数据
+-(void)deleteAllLoadingHistory;
+//修改数据库中state得值
+-(void)changeOneLoadingHistoryState:(int)ID state:(int)state;
+
+@end

@@ -1,0 +1,62 @@
+//
+//  LeftSiderCell.m
+//  PAiPhoneBank2.0
+//
+//  Created by xiao on 5/20/13.
+//  Copyright (c) 2013 da zhan. All rights reserved.
+//
+
+#import "LeftSiderCell.h"
+
+@implementation LeftSiderCell
+@synthesize imageView  = m_pImageView;
+@synthesize label = m_pLabel;
+@synthesize badgeView;
+@synthesize  arrowImageView;
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
+{
+    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+    if (self) {
+        // Initialization code
+        
+        UIImageView *pBGImageView = [[UIImageView alloc] init];
+        [pBGImageView setFrame:CGRectMake(0, 43, 260, 2)];
+        [pBGImageView setImage:[UIImage imageNamed:@"leftsider_cell_line.png"]];
+        pBGImageView.alpha =0.3;
+        [self addSubview:pBGImageView];
+        [pBGImageView release];
+        
+        UIImageView *pArrowImageView = [[UIImageView alloc] init];
+        [pArrowImageView setFrame:CGRectMake(229, (45-24)/2, 24, 24)];
+        [pArrowImageView setImage:[UIImage imageNamed:@"leftsider_arrow.png"]];
+        [self addSubview:pArrowImageView];
+        arrowImageView = pArrowImageView;
+        [pArrowImageView release];
+        
+        m_pImageView= [[PAAsynDownloadImageView alloc] init];
+        [m_pImageView setFrame:CGRectMake(10, (45-30)/2, 30, 30)];
+        [self addSubview:m_pImageView];
+        [m_pImageView release];
+        
+        m_pLabel = [[UILabel alloc] init];
+      
+        [m_pLabel setFrame:CGRectMake(m_pImageView.frame.size.width+m_pImageView.frame.origin.x + 10, 0, 0, 45)];
+        [m_pLabel setTextColor:[UIColor whiteColor]];
+        [m_pLabel setFont:[UIFont boldSystemFontOfSize:15]];
+        [m_pLabel setBackgroundColor:[UIColor clearColor]];
+         m_pLabel.textAlignment = UITextAlignmentCenter;
+        [self addSubview:m_pLabel];
+        [m_pLabel release];
+       
+        badgeView = [[MKNumberBadgeView alloc]initWithFrame:CGRectMake(m_pLabel.frame.origin.x+m_pLabel.frame.size.width-15, 2, 4, 18)];
+        
+        [self addSubview:badgeView];
+        [badgeView release];
+        badgeView.hidden = YES;
+        
+
+    }
+    return self;
+}
+
+@end

@@ -1,0 +1,64 @@
+//
+//  LeftSiderViewController.m
+//  PAiPhoneBank2.0
+//
+//  Created by xiao on 5/20/13.
+//  Copyright (c) 2013 da zhan. All rights reserved.
+//
+
+#import "LeftSiderViewController.h"
+
+@interface LeftSiderViewController ()
+
+@end
+static LeftSiderViewController* shareInstance = nil;
+
+@implementation LeftSiderViewController
+
+
+	
+
++(LeftSiderViewController*)shareInstance
+{
+    return shareInstance;
+
+}
+-(id)init
+{ 
+    self = [super init];
+                
+    if( self )
+    {
+        shareInstance  = self;
+    }
+    return self;
+}
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+	// Do any additional setup after loading the view.
+    leftSiderView = [[LeftSiderView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth - 44, kApplicationHeight)];
+    [self.view addSubview:leftSiderView];
+    [leftSiderView release];
+}
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+-(void)handleLoginWithInfo:(NSDictionary *)info{
+   
+    [leftSiderView handleLoginWithInfo:info];
+}
+-(void)handleLogout{
+    [leftSiderView handleLogout];
+}
+-(void)refreshPersonHintWithImg:(NSString *)fileName hintMsg:(NSString *)hintMsg{
+    [leftSiderView refreshPersonHintWithImg:(NSString *)fileName hintMsg:(NSString *)hintMsg];
+}
+-(void)refreshNoticeNum:(NSString *)num{
+    [leftSiderView refreshNoticeNum:(NSString *)num];
+}
+
+@end

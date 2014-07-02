@@ -1,0 +1,330 @@
+//
+//  SqlDabase.m
+// 
+
+#import "SqlDabase.h"
+
+@implementation SqlDabase
+
+-(id) init
+{
+	self = [super init];
+	if (self)
+	{
+		[self openDataBase];	
+	}
+	
+	return self;
+}
+
+-(void)dealloc
+{	
+
+	[self closeDataBase];
+	
+	[super dealloc];
+}
+
+
+//打开数据库
+-(BOOL) openDataBase
+{
+	if (dataBase != nil)
+	{
+		return YES;
+	}
+	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+	NSString *documentsDirectory = [paths objectAtIndex:0];
+	NSString *filePath = [documentsDirectory stringByAppendingPathComponent:kFilename];
+	if (sqlite3_open([filePath UTF8String], &dataBase) != SQLITE_OK) 
+	{
+		sqlite3_close(dataBase);
+		
+		NSAssert(0, @"Failed to open database");
+		
+		return NO;
+	}
+	
+	NSLog(@"打开数据库成功");
+	
+	return YES;
+}
+
+//关闭数据库
+-(void) closeDataBase
+{
+	if (dataBase != nil)
+	{
+		sqlite3_close(dataBase);
+		
+		dataBase = nil;
+	}
+	
+	NSLog(@"关闭数据库成功");
+}
+
+
+// 不需要返回结果集
+-(BOOL)execute:(NSString*) sql
+{
+	if (dataBase == nil)
+	{
+		return NO;
+	}
+	
+	char error[1024];
+	memset(error, 0, 1024);
+	
+	char *pError = error;
+	
+	//NSLog(@"Execute SQL:%@", sql);
+	
+	if (sqlite3_exec (dataBase, [sql UTF8String], NULL, NULL, &pError) != SQLITE_OK) 
+	{
+		[self closeDataBase];
+		
+		NSAssert1(0, @"Error Execute SQL: %s", pError);
+		
+		return NO;
+	}
+	
+	return YES;
+}
+
+// 需要返回结果集
+-(NSMutableDictionary*) query:(NSString*) sql
+{
+	
+	NSMutableArray* fields = [[[NSMutableArray alloc] init] autorelease];
+	 
+	NSMutableDictionary* dataSet = [[[NSMutableDictionary alloc] init] autorelease];
+	
+	if (sqlite3_prepare_v2(dataBase, [sql UTF8String], -1, &statement, nil) == SQLITE_OK) 
+	{
+		
+		int recordKey = 1; int f = 0;
+		int cols = sqlite3_column_count(statement);
+		while (f < cols) {
+			
+			const char* pFieldName = sqlite3_column_name(statement, f++);
+			
+			[fields addObject:[NSString stringWithUTF8String:pFieldName]];
+			
+		}
+		
+		while (sqlite3_step(statement) == SQLITE_ROW) 
+		{
+			
+			NSMutableArray* record = [[NSMutableArray alloc] init];
+			for (int n = 0; n < cols; n ++)
+			{				
+				// 获取字段类型
+				int type = sqlite3_column_type(statement, n);
+				
+				id value = nil;
+				
+				
+				switch (type)
+				{
+					case SQLITE_INTEGER:
+					{
+						int intVlaue = sqlite3_column_int(statement, n);
+						
+						value = [NSString stringWithFormat:@"%d", intVlaue];
+					 
+					}
+						
+						break;
+					case SQLITE_FLOAT:
+					{
+						double floatValue = sqlite3_column_double(statement, n);
+						
+						value = [NSString stringWithFormat:@"%.2f", floatValue];
+						
+						
+					}
+						break;
+
+
+					case SQLITE_TEXT:
+					{
+						const char * pText = (const char*)sqlite3_column_text(statement, n);
+						
+						value = [NSString stringWithUTF8String:pText];
+						
+					}
+				 
+						break;
+						
+					case SQLITE_BLOB:
+					{
+						const void *pBlob = (const void *)sqlite3_column_blob(statement, n);
+						
+						int length = sqlite3_column_bytes(statement, n);
+						
+						value = [NSData dataWithBytes:pBlob length:length];
+					}
+						break;
+
+					case SQLITE_NULL:
+					{
+						value = [NSString stringWithFormat:@"%@", @""];
+						
+						
+					}
+						break;
+
+
+					default:
+						break;
+				}
+				
+				// 保存一个串类型字段
+				[record addObject:value];
+				 
+			}
+			
+			[dataSet setObject:record forKey:[NSString stringWithFormat:@"%d", recordKey]];
+			[record release];
+			
+			recordKey ++;
+		}
+		
+		
+	}
+	
+	sqlite3_finalize(statement);
+	
+	return dataSet;
+	
+}
+
+
+-(BOOL) insert:(NSString*) table Fields:(NSArray*) fields Values:(NSArray*) values
+{	
+	
+	NSString* SQL = [NSString stringWithFormat:@"INSERT INTO %@(", table];
+	
+	NSString* fieldStr = @"";
+	NSString* valueStr = @"";
+	
+	int len = [fields count];
+	
+	for (int n = 0; n < len - 1; n ++) 
+	{
+		NSString* temp1 = [NSString stringWithFormat:@"%@,", (NSString*)[fields objectAtIndex:n]];
+		fieldStr = [NSString stringWithFormat:@"%@%@", fieldStr, temp1];
+		
+		NSString* temp2 = @"?,";
+		
+		valueStr = [NSString stringWithFormat:@"%@%@", valueStr, temp2];
+	}
+
+	fieldStr = [NSString stringWithFormat:@"%@%@", fieldStr, [fields objectAtIndex:(len - 1)]];
+	valueStr = [NSString stringWithFormat:@"%@?", valueStr];
+	
+	
+	SQL = [NSString stringWithFormat:@"%@%@) values(%@)", SQL, fieldStr, valueStr];
+	
+	NSLog(@"INSERT SQL:(%@)", SQL);
+	
+	int success = sqlite3_prepare_v2(dataBase, [SQL UTF8String], -1, &statement, nil);
+	if (success != SQLITE_OK) 
+	{
+		NSLog(@"Error: failed to insert:channels");
+		
+		return NO;
+	}
+	
+	int index = 1;
+	for (NSString* value in values)
+	{
+		sqlite3_bind_text(statement, index ++, [value UTF8String], -1, SQLITE_TRANSIENT);
+	}
+	
+	 	
+	sqlite3_step(statement);
+	
+	sqlite3_finalize(statement);
+
+	return YES;
+}
+
+- (BOOL)insert:(NSString*)table datas:(NSArray*)datas fields:(NSArray*)fields{
+	
+	NSString* SQL = [NSString stringWithFormat:@"INSERT INTO %@(", table];
+	
+	NSString* fieldStr = @"";
+	NSString* valueStr = @"";
+	
+	int len = [fields count];
+	
+	for (int n = 0; n < len - 1; n ++) 
+	{
+		NSString* temp1 = [NSString stringWithFormat:@"%@,", (NSString*)[fields objectAtIndex:n]];
+		fieldStr = [NSString stringWithFormat:@"%@%@", fieldStr, temp1];
+		
+		NSString* temp2 = @"?,";
+		
+		valueStr = [NSString stringWithFormat:@"%@%@", valueStr, temp2];
+	}
+	
+	fieldStr = [NSString stringWithFormat:@"%@%@", fieldStr, [fields objectAtIndex:(len - 1)]];
+	valueStr = [NSString stringWithFormat:@"%@?", valueStr];
+	
+	
+	SQL = [NSString stringWithFormat:@"%@%@) values(%@)", SQL, fieldStr, valueStr];
+	
+	NSLog(@"INSERT SQL:(%@)", SQL);
+	
+	int success = sqlite3_prepare_v2(dataBase, [SQL UTF8String], -1, &statement, nil);
+	if (success != SQLITE_OK) 
+	{
+		NSLog(@"Error: failed to insert:channels");
+		
+		return NO;
+	}
+
+	int index = 1;
+	for (NSDictionary* keyValue in datas)
+	{
+		for (NSString * key in keyValue) {
+
+			if ([key isEqualToString:@"SQLITE_INTEGER"]) {//int 
+				
+				NSNumber *value = (NSNumber*)[keyValue objectForKey:key];
+				
+				sqlite3_bind_int(statement, index++, [value intValue]);
+				
+			}else if ([key isEqualToString:@"SQLITE_FLOAT"]) { //float
+				
+				NSNumber *value = (NSNumber*)[keyValue objectForKey:key];
+				
+				sqlite3_bind_double(statement, index++, [value doubleValue]);
+				
+			}else if ([key isEqualToString:@"SQLITE_BLOB"]) { //blob
+				
+				NSData *value = (NSData*)[keyValue objectForKey:key];
+			
+				sqlite3_bind_blob(statement, index++, [value bytes], [value length], SQLITE_STATIC);
+				
+			}else if ([key isEqualToString:@"SQLITE_TEXT"]) { //text
+				
+				NSString *value = (NSString*)[keyValue objectForKey:key];
+				
+				sqlite3_bind_text(statement, index ++, [value UTF8String], -1, SQLITE_TRANSIENT);
+				
+			}
+			
+		}
+		
+	}
+	
+	sqlite3_step(statement);
+	
+	sqlite3_finalize(statement);
+	
+	return YES;
+}
+
+@end

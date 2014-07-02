@@ -1,0 +1,356 @@
+//
+//  PAWebCache.m
+//  BridgeDemo
+//
+//  Created by da zhan on 13-2-27.
+//  Copyright (c) 2013年 xyh. All rights reserved.
+//
+
+#import "PAWebCache.h"
+#import <UIKit/UIKit.h>
+#import "Sqlite3Operation.h"
+#import "WebViewCache.h"
+#import "NSString_extra.h"
+@implementation PAWebCache
+
+//- (NSDictionary *)substitutionPaths
+//{
+//    
+////    NSString *file = [[NSBundle mainBundle] pathForResource:@"PAWebCache" ofType:@"plist"];
+////    moreAppArray = [[NSMutableArray alloc] initWithContentsOfFile:file];
+////    NSMutableDictionary * mutableDictionary = [NSMutableDictionary dictionaryWithCapacity:5];
+////     
+////    for (int i=0; i<[moreAppArray count]; i++)
+////    {
+////        NSString * serverUrlAddress = [NSString stringWithFormat:@"%@%@",HOST_CACHE_IP,[[moreAppArray objectAtIndex:i] objectForKey:@"ServerUrlAddress"]];
+////        [mutableDictionary setObject:[[moreAppArray objectAtIndex:i] objectForKey:@"LocalSubstitutionSource"]   forKey:serverUrlAddress];
+////    }
+////    return mutableDictionary;
+//    
+//    
+//      /*
+//	return
+//    [NSDictionary dictionaryWithObjectsAndKeys:
+//     @"require-min.js",@"http://10.16.21.18/MEOAForManifest/native/js/lib/require/require-min.js",
+//     @"global.css",    @"http://10.16.21.18/MEOAForManifest/native/css/global.css",
+//     @"URLconfig.js",  @"http://10.16.21.18/MEOAForManifest/native/js/URLconfig.js",
+//     @"style.css",     @"http://10.16.21.18/MEOAForManifest/native/css/style.css",
+//     @"zepto.min.js",  @"http://10.16.21.18/MEOAForManifest/native/js/lib/zepto/zepto.min.js",
+//     @"Timer.js",      @"http://10.16.21.18/MEOAForManifest/native/js/utils/Timer.js",
+//     @"build-main.js", @"http://10.16.21.18/MEOAForManifest/native/build-main.js",
+//     @"loading.gif",   @"http://10.16.21.18/MEOAForManifest/native/images/loading.gif",
+//     @"refresh.png",   @"http://10.16.21.18/MEOAForManifest/native/images/refresh.png",
+//     @"back.png",      @"http://10.16.21.18/MEOAForManifest/native/images/back.png",
+//     @"bg_index.png",  @"http://10.16.21.18/MEOAForManifest/native/images/bg_index.png",
+//     @"list.png",      @"http://10.16.21.18/MEOAForManifest/native/images/list.png",
+//     nil];
+// 
+//     */
+//}
+
+
+/**
+ * 根据扩展名获取MimeType
+ * @param originalPath NSString 文件路径
+ * @return 返回扩展名对应的MimeType
+ * @author 景李军
+ * @date 2013-2-25
+ */
+
+static PAWebCache * paWebCache = nil;
+
++(PAWebCache*)shareInstance
+{
+    @synchronized(self)
+    {
+        if (!paWebCache)
+        {
+            paWebCache = [[PAWebCache alloc] initWithMemoryCapacity:4 * 1024 * 1024 diskCapacity:0 diskPath:nil];
+        }
+	}
+    return paWebCache;
+}
+static NSSet *supportSchemes;
+-(id)initWithMemoryCapacity:(NSUInteger)memoryCapacity diskCapacity:(NSUInteger)diskCapacity diskPath:(NSString *)path
+{
+    if (self = [super initWithMemoryCapacity:memoryCapacity diskCapacity:diskCapacity diskPath:path])
+    {
+        //fileDictionary = [[NSMutableDictionary alloc] initWithDictionary:[self getFileDictionary]];
+        //[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updataDictionary) name:@"updataDictionary" object:nil];
+        supportSchemes = [[NSSet setWithObjects:@"http", @"https", @"ftp", nil] retain];
+    }
+    return self;
+}
+
+- (NSString *)mimeTypeForPath:(NSString *)originalPath
+{
+    if ([originalPath hasSuffix:@".png"]) {
+        return @"image/png";
+    } else if ([originalPath hasSuffix:@".jpeg"]) {
+        return @"image/jpeg";
+    }else if ([originalPath hasSuffix:@".jpg"]) {
+        return @"image/jpg";
+    }else if ([originalPath hasSuffix:@".gif"]) {
+        return @"image/gif";
+    }
+    else if ([originalPath hasSuffix:@".js"]) {
+        return @"application/x-javascript";
+    }
+    else if ([originalPath hasSuffix:@".css"]) {
+        return @"text/css";
+    } else {
+        return @"text/html";
+    }
+}
+
+- (NSCachedURLResponse *)cachedResponseForRequest:(NSURLRequest *)request
+{
+    NSLog(@"http = %@",[[request URL] absoluteString]);
+    if(isHTTPSAllowed){
+        [NSMutableURLRequest setAllowsAnyHTTPSCertificate:YES forHost:request.URL.host];
+    }
+    
+    if ([request.HTTPMethod compare:@"GET"] != NSOrderedSame)
+    {
+        return [super cachedResponseForRequest:request];
+    }
+    
+    NSURL *url = request.URL;
+    if (![supportSchemes containsObject:url.scheme])
+    {
+        return [super cachedResponseForRequest:request];
+    }
+    NSMutableArray * infoArray = [[NSMutableArray alloc] init];
+    [[Sqlite3Operation share] getLoadingHistoryInfo:infoArray];
+    for (int i = 0; i < [infoArray count]; i++)
+    {
+        LoadingHistoryInfo * info = [infoArray objectAtIndex:i];
+        if ([info.loadUrl isEqualToString:request.URL.absoluteString])
+        {
+            if ([info.loadState intValue] == 0)
+            {
+                NSLog(@"%@ 从服务器下载",request.URL.absoluteString);
+                return [super cachedResponseForRequest:request];
+            }
+        }
+    }
+    [infoArray release];
+//    if (!cachedResponses)
+//	{
+//		cachedResponses = [[NSMutableDictionary alloc] init];
+//	}
+	//
+	// Get the path for the request
+	//
+	NSString *pathString = [[request URL] absoluteString];
+    //NSLog(@"pathstring==%@",pathString);
+	//
+	// See if we have a substitution file for this path
+	//
+    
+    NSCachedURLResponse *cachedResponse = [[WebViewCache shareInstance].cachedResponses objectForKey:pathString];
+	if (cachedResponse)
+	{
+        float version = [[[UIDevice currentDevice] systemVersion] floatValue];
+        if (version >= 5.0)
+        {
+            return cachedResponse;
+            
+        }
+        else
+        {
+            return [super cachedResponseForRequest:request];
+        }
+	}
+    
+	NSString *substitutionFileName = [[[WebViewCache shareInstance].fileDictionary objectForKey:pathString] URLDecodedString];
+    //NSLog(@"替代名字 ==%@",substitutionFileName);
+	if (!substitutionFileName)
+	{
+		//
+		// No substitution file, return the default cache response
+		//
+		return [super cachedResponseForRequest:request];
+	}
+	
+	//
+	// If we've already created a cache entry for this path, then return it.
+	///usr/local/nginx/html/manifest/assets/js/main.js
+	
+	//
+	// Get the path to the substitution file
+	//
+    //  apple_core
+    //js
+//    NSString *fileNamePresuff=[substitutionFileName stringByDeletingPathExtension];
+//    NSString *fileNameSubsuff=[substitutionFileName pathExtension];
+//    
+//	NSString *substitutionFilePath =[[NSBundle mainBundle] pathForResource:fileNamePresuff ofType:fileNameSubsuff];
+    //NSLog(@"路径是xxxxx==%@",substitutionFilePath);
+//    
+//    UIAlertView *alert=[[UIAlertView alloc]initWithTitle:@"sss"
+//                                                message:substitutionFilePath
+//                                                delegate:self
+//                                                cancelButtonTitle:nil
+//                                                otherButtonTitles:@"cancel", nil];
+//    [alert show];
+//    [alert release];
+    
+ 
+	NSAssert(substitutionFileName, @"File %@ in substitutionPaths didn't exist", substitutionFileName);
+	
+	//
+	// Load the data
+	//
+	NSData *data = [NSData dataWithContentsOfFile:substitutionFileName];
+	
+	//
+	// Create the cacheable response
+	//
+	//NSURLResponse *response = [[NSURLResponse alloc] initWithURL:[request URL] MIMEType:[self mimeTypeForPath:pathString] expectedContentLength:[data length] textEncodingName:nil];
+    NSURLResponse *response = [[NSURLResponse alloc] initWithURL:[request URL] MIMEType:[self mimeTypeForPath:pathString] expectedContentLength:[data length] textEncodingName:nil];
+	cachedResponse = [[[NSCachedURLResponse alloc] initWithResponse:response data:data] autorelease];
+    [response release];
+	
+	//
+	// Add it to our cache dictionary
+	//
+    
+    [[WebViewCache shareInstance] addCachedToDictionary:cachedResponse PathKey:pathString];
+	//[cachedResponses setObject:cachedResponse forKey:pathString];
+	return cachedResponse;
+}
+
+- (NSString *)getMimeType:(NSString *)fileAbsolutePath error:(NSError *)error
+{
+    NSString* fullPath = [fileAbsolutePath stringByExpandingTildeInPath];
+    NSURL* fileUrl = [NSURL fileURLWithPath:fullPath];
+    NSURLRequest* fileUrlRequest = [NSURLRequest requestWithURL: fileUrl];
+    NSURLResponse* response = nil;
+    [NSURLConnection sendSynchronousRequest:fileUrlRequest returningResponse:&response error:&error];
+    return[response MIMEType];
+}
+
+- (void)removeCachedResponseForRequest:(NSURLRequest *)request
+{
+	//
+	// Get the path for the request
+	//
+	NSString *pathString = [[request URL] path];
+	if ([[WebViewCache shareInstance].cachedResponses objectForKey:pathString])
+	{
+		[[WebViewCache shareInstance].cachedResponses removeObjectForKey:pathString];
+	}
+	else
+	{
+		[super removeCachedResponseForRequest:request];
+	}
+}
+
+-(NSMutableDictionary*)getFileDictionary
+{
+    NSMutableDictionary * mutableDictionary = [NSMutableDictionary dictionaryWithCapacity:5];
+    NSMutableArray * pathArray = [[NSMutableArray alloc] initWithCapacity:0];
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    NSString * manifestPath = [NSString stringWithFormat:@"%@/%@/%@",documentsDirectory,LOCAL_MANIFEST_PATH,LOCAL_ASSETS_PATH];
+    
+    [self allFilesAtPath:manifestPath Dictionary:mutableDictionary Array:pathArray];
+    
+    return mutableDictionary;
+}
+
+-(NSMutableDictionary*)traversalFileSystem
+{
+    //NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    //NSString *documentsDirectory = [paths objectAtIndex:0];
+//    if (!pathArray)
+//    {
+//        pathArray = [[NSMutableArray alloc] initWithCapacity:0];
+//    }
+    //NSString * manifestPath = [NSString stringWithFormat:@"%@/%@",documentsDirectory,LOCAL_MANIFEST_PATH];
+    NSMutableDictionary * dic = [self getFileDictionary];
+    return dic;
+//    NSLog(@"%@",pathArray);
+    
+//    NSFileManager *fileManager = [NSFileManager defaultManager];
+//    NSMutableDictionary * mutableDictionary = [NSMutableDictionary dictionaryWithCapacity:5];
+//    NSDirectoryEnumerator *direnum = [fileManager enumeratorAtPath:manifestPath]; //遍历目录
+//    NSMutableArray *files = [NSMutableArray arrayWithCapacity:50];
+//    files = [[NSMutableArray alloc] init];
+//    
+//    NSString *fileName;
+//    while((fileName = [direnum nextObject]))
+//    {
+//        if([[fileName pathExtension] isEqualToString:@"js"]  ||
+//           [[fileName pathExtension] isEqualToString:@"css"] ||
+//           [[fileName pathExtension] isEqualToString:@"png"] ||
+//           [[fileName pathExtension] isEqualToString:@"jpg"] ||
+//           [[fileName pathExtension] isEqualToString:@"gif"] )
+//        { //遍历条件
+//            [files addObject:fileName];
+//        }
+//    }
+//    //NSLog(@"sfasd==%@",files);
+//    for (int i=0; i<[files count]; i++)
+//    {
+//        NSString * srcPath = [NSString stringWithFormat:@"%@/%@/%@",documentsDirectory,LOCAL_MANIFEST_PATH,[files objectAtIndex:i]];
+//        [mutableDictionary setObject:srcPath forKey:[NSString stringWithFormat:@"%@%@%@",HOST_SERVER_IP,HOST_SERVER_PATH,[files objectAtIndex:i]]];
+//    }
+//    
+//    
+//    //NSLog(@"字典===%@",mutableDictionary);
+//    return mutableDictionary;
+}
+
+
+- (void)allFilesAtPath:(NSString *)direString Dictionary:(NSMutableDictionary*)dic Array:(NSMutableArray*)array
+{
+    //NSMutableArray *pathArray = [NSMutableArray array];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSArray *tempArray = [fileManager contentsOfDirectoryAtPath:direString error:nil];
+    for (NSString *fileName in tempArray) {
+        BOOL flag = YES;
+        NSString *fullPath = [direString stringByAppendingPathComponent:fileName];
+        if ([fileManager fileExistsAtPath:fullPath isDirectory:&flag]) {
+            if (!flag) {
+                // ignore .DS_Store
+                if (![[fileName substringToIndex:1] isEqualToString:@"."])
+                {
+                    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+                    NSString *documentsDirectory = [paths objectAtIndex:0];
+                    NSString * tempPath = [NSString stringWithFormat:@"%@/%@/%@",documentsDirectory,LOCAL_MANIFEST_PATH,LOCAL_ASSETS_PATH];
+                    NSString * tempstr = [fullPath substringFromIndex:[tempPath length]+1];
+                    [dic setObject:fullPath forKey:[NSString stringWithFormat:@"%@%@%@",HOST_SERVER_IP,HOST_SERVER_PATH,tempstr]];
+                    //[dic setObject:fullPath forKey:[NSString stringWithFormat:@"http://www.localhost.com/manifest/%@",tempstr]];
+                    //[array addObject:fullPath];
+                }
+            }
+            else
+            {
+                [self allFilesAtPath:fullPath Dictionary:dic Array:array];
+            }
+        }
+    }
+}
+
+//-(void)updataDictionary
+//{
+//    [fileDictionary removeAllObjects];
+//    [fileDictionary release];
+//    fileDictionary = nil;
+//    fileDictionary = [[NSMutableDictionary alloc] initWithDictionary:[self getFileDictionary]];
+//}
+
+- (void)dealloc
+{
+    //[[NSNotificationCenter defaultCenter] removeObserver:self name:@"updataDictionary" object:nil];
+    //[fileDictionary release];
+	[cachedResponses release];
+	cachedResponses = nil;
+	[super dealloc];
+}
+
+
+
+@end

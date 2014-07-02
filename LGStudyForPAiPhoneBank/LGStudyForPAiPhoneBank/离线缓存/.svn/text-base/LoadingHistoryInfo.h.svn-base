@@ -1,0 +1,24 @@
+//
+//  LoadingHistoryInfo.h
+//  WebViewCacheDemo
+//
+//  Created by coson on 13-4-23.
+//  Copyright (c) 2013年 coson. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+@interface LoadingHistoryInfo : NSObject
+{
+    NSString * localPath;  //本地路径
+    NSString * loadUrl;    //下载url
+    int        ID;         //下载id
+    NSString * loadState;  //下载状态 0：失败   1：成功
+}
+
+@property (nonatomic, retain) NSString * localPath;
+@property (nonatomic, retain) NSString * loadUrl;
+@property (nonatomic, retain) NSString * loadState;
+@property (nonatomic) int ID;
+
+@end

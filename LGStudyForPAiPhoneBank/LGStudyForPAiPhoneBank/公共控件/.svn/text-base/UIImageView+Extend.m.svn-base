@@ -1,0 +1,819 @@
+//
+//  UIImageView+Extend.m
+//  PAEBank
+//
+//  Created by 夏炳献 on 11-12-13.
+//  Copyright (c) 2011年 __MyCompanyName__. All rights reserved.
+//
+
+#import "UIImageView+Extend.h"
+
+#import <QuartzCore/QuartzCore.h>
+#import "PAAsynDownloadImageView.h"
+
+#define Max_Line_Title_Count 6
+#define Max_Line_Title_Height 16
+
+@interface UIImageView_Extend()
+{
+    // UIView背景
+    UIImage* viewNoralImg;
+    UIImage* viewSelectImg;
+    
+    // UIButton背景
+    UIImage* btnNormalImg;       // 普通状态下的图片
+    UIImage* btnSelectImg;       // 选中状态下的图片
+    PAAsynDownloadImageView* btnImageView;
+    UIImageView* btnSelView;
+    
+    // 扩展字体［显示文本内容］
+    NSString* showTitle;
+    UIFont* showTitleFont;
+    UIColor* showNormalColor;
+    UIColor* showSelectColor;
+    UILabel* titleLable;
+    
+    // 扩张icon图标下载
+    NSString* iconUrl;
+    
+    CGPoint touchBeginPoint;
+    BOOL isMoveFlag;
+    BOOL isArrowLine;
+    
+    // 添加对象的抖动状态
+    NSTimer* editTimer;
+    BOOL isEidtFlag;
+    UIImageView* editIcon;
+    float curTransAngel;
+	BOOL curTransFlag;
+    BOOL isDelFlag;
+}
+
+// UIView背景
+@property(retain,nonatomic) UIImage* viewNoralImg;
+@property(retain,nonatomic) UIImage* viewSelectImg;
+
+// UIButton背景
+@property(retain,nonatomic) UIImage* btnNormalImg;       // 普通状态下的图片
+@property(retain,nonatomic) UIImage* btnSelectImg;       // 选中状态下的图片
+
+// 扩展字体［显示文本内容］
+@property(retain,nonatomic) NSString* showTitle;
+@property(retain,nonatomic) UIFont* showTitleFont;
+@property(retain,nonatomic) UIColor* showNormalColor;
+@property(retain,nonatomic) UIColor* showSelectColor;
+@property(nonatomic) BOOL isArrowLine;
+
+// 扩张icon图标下载
+@property(retain,nonatomic) NSString* iconUrl;
+
+@property(assign,nonatomic) NSTimer* editTimer;
+@property(nonatomic) BOOL isEidtFlag;
+@property(nonatomic,retain)UIImageView* editIcon;
+
+@end
+
+@implementation UIImageView_Extend
+
+@synthesize curDelegate;    // 当前回调对象
+@synthesize typeTag;        // 类型标识
+@synthesize isArrowLine;
+
+@synthesize iconUrl;
+
+// UIView背景
+@synthesize viewNoralImg;
+@synthesize viewSelectImg;
+
+// UIButton背景
+@synthesize btnNormalImg;       // 普通状态下的图片
+@synthesize btnSelectImg;       // 选中状态下的图片
+
+// 扩展字体［显示文本内容］
+@synthesize showTitle;
+@synthesize showTitleFont;
+@synthesize showNormalColor;
+@synthesize showSelectColor;
+
+@synthesize editTimer;
+@synthesize isEidtFlag;
+@synthesize editIcon;
+
+-(void)dealloc
+{
+    [editIcon release];
+    [self stopEditAction];
+    
+    [viewNoralImg release];
+    [viewSelectImg release];
+    [btnSelView release];
+    
+    // UIButton背景
+    [btnNormalImg release];
+    [btnSelectImg release];       // 选中状态下的图片
+    
+    // 扩展字体［显示文本内容］
+    [showTitle release];
+    [showTitleFont release];
+    [showNormalColor release];
+    [showSelectColor release];
+    
+    [iconUrl release];
+    
+    [super dealloc];
+}
+
+/*初始化页面*/
+- (id)initWithFrame:(CGRect)frame {
+	
+    self = [super initWithFrame:frame];
+    if (self) {
+
+        self.typeTag = UIImageView_Default_Tag_Type;
+        self.isArrowLine = FALSE;
+    }
+    return self;
+}
+
+-(id)initWithViewFrame:(CGRect)frame Setting:(NSDictionary*)settings Tagtype:(UIImageView_Extend_TagType)type
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        //
+        self.typeTag = type;
+        self.multipleTouchEnabled = NO;
+        //self.backgroundColor = [UIColor redColor];
+        self.isArrowLine = FALSE;
+        if([settings isKindOfClass:[NSDictionary class]])
+        {
+            self.viewNoralImg = [settings valueForKey:@"ViewNormalBg"];
+            self.viewSelectImg = [settings valueForKey:@"ViewSelectBg"];
+            
+            self.btnNormalImg = [settings valueForKey:@"BtnNormalBg"];
+            self.btnSelectImg = [settings valueForKey:@"BtnSelectBg"];
+            
+            self.showTitle = [settings valueForKey:@"TitleName"];
+            
+            self.showTitleFont = [settings valueForKey:@"TitleFont"]?
+            [settings valueForKey:@"TitleFont"]:[UIFont systemFontOfSize:10];
+            self.showNormalColor = [settings valueForKey:@"TitleNorColor"]?
+            [settings valueForKey:@"TitleNorColor"]:
+            [UIColor colorWithRed:225/255.0 green:225/255.0 blue:225/255.0 alpha:1.0];
+            self.showSelectColor = [settings valueForKey:@"TitleSelColor"]?
+            [settings valueForKey:@"TitleSelColor"]:[UIColor whiteColor];
+            self.isArrowLine = [settings valueForKey:@"ArrorLine"]?[[settings valueForKey:@"ArrorLine"] boolValue]:FALSE;
+            
+            //
+            self.iconUrl = [settings valueForKey:@"IconUrl"];
+        }
+        
+        // 添加控件
+        if( self.viewNoralImg )
+        {
+            self.layer.contents = (id)(self.viewNoralImg).CGImage;      // 默认没选中状态
+        }
+        
+        int viewWidth = CGRectGetWidth(self.frame);
+        
+        // view上的图片及文字
+        if( self.btnNormalImg )
+        {
+            CGSize imageSize = [self.btnNormalImg size];
+            // 重数据库里读出来的图，宽、高要写死
+            if( self.typeTag==UIImageView_Diy_Tag_Type || self.typeTag==UIImageView_Icon_Add_Type )
+            {
+                imageSize = CGSizeMake(60,60);
+            }
+            btnImageView = [[PAAsynDownloadImageView alloc] initWithFrame:CGRectMake((viewWidth-(int)imageSize.width)/2,0,imageSize.width,imageSize.height)];
+            btnImageView.userInteractionEnabled = YES;
+            btnImageView.asynDownloadDelegate = self;
+            btnImageView.layer.contents = (id)(self.btnNormalImg).CGImage;
+            [self addSubview:btnImageView];
+            [btnImageView release];
+            
+            //
+            if( [self.iconUrl length]>0 )
+            {
+                // 不要下载了
+                // [btnImageView loadImageFromURL:[NSURL URLWithString:self.iconUrl]];
+            }
+        }
+        
+        // home_icon_sel@2x
+        UIImage* selImage_f = [UIImage imageNamed:@"home_icon_sel.png"];
+        btnSelView = [[UIImageView alloc] initWithFrame:CGRectMake(0,0,selImage_f.size.width,selImage_f.size.height)];
+        btnSelView.image = selImage_f;
+        btnSelView.userInteractionEnabled = YES;
+        
+        // 添加显示文本
+        if( self.showTitle.length>0 )
+        {
+            CGSize fontSize = [self.showTitle sizeWithFont:self.showTitleFont];
+            // 要添加换行处理［默认6个字一行］
+            int row_f = 1;
+            CGSize titleWidth_f = [@"我的测试测试" sizeWithFont:self.showTitleFont];
+            NSString* showTitle_f = self.showTitle;
+            if( self.showTitle.length>Max_Line_Title_Count )
+            {
+                row_f = 2;
+                showTitle_f = [NSString stringWithFormat:@"%@\n%@",[self.showTitle substringWithRange:NSMakeRange(0,Max_Line_Title_Count)],
+                               [self.showTitle substringWithRange:NSMakeRange(Max_Line_Title_Count,self.showTitle.length-Max_Line_Title_Count)]];
+            }
+            //titleWidth_f.width = titleWidth_f.width>fontSize.width?fontSize.width:titleWidth_f.width;
+            titleLable = [[UILabel alloc] initWithFrame:CGRectMake((viewWidth-titleWidth_f.width)/2,0,titleWidth_f.width,fontSize.height)];
+            [titleLable setFont:self.showTitleFont];
+            [titleLable setText:showTitle_f];
+            [titleLable setLineBreakMode:NSLineBreakByWordWrapping];
+            titleLable.numberOfLines = row_f;
+            [titleLable setBackgroundColor:[UIColor clearColor]];
+            [titleLable setTextColor:self.showNormalColor];     // 默认为没有选中
+            [titleLable setTextAlignment:NSTextAlignmentCenter];
+            titleLable.clipsToBounds = NO;
+            [self addSubview:titleLable];
+            [titleLable release];
+        }
+        
+    }
+    return self;
+}
+
+-(id)initWithViewFrame:(CGRect)frame Setting:(NSDictionary*)settings
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        //
+        self.typeTag = UIImageView_Default_Tag_Type;
+        self.multipleTouchEnabled = NO;
+        //self.backgroundColor = [UIColor redColor];
+        self.isArrowLine = FALSE;
+        if([settings isKindOfClass:[NSDictionary class]])
+        {
+            self.viewNoralImg = [settings valueForKey:@"ViewNormalBg"];
+            self.viewSelectImg = [settings valueForKey:@"ViewSelectBg"];
+            
+            self.btnNormalImg = [settings valueForKey:@"BtnNormalBg"];
+            self.btnSelectImg = [settings valueForKey:@"BtnSelectBg"];
+            
+            self.showTitle = [settings valueForKey:@"TitleName"];
+            
+            self.showTitleFont = [settings valueForKey:@"TitleFont"]?
+                                 [settings valueForKey:@"TitleFont"]:[UIFont systemFontOfSize:10];
+            self.showNormalColor = [settings valueForKey:@"TitleNorColor"]?
+                                   [settings valueForKey:@"TitleNorColor"]:
+                                   [UIColor colorWithRed:225/255.0 green:225/255.0 blue:225/255.0 alpha:1.0];
+            self.showSelectColor = [settings valueForKey:@"TitleSelColor"]?
+                                   [settings valueForKey:@"TitleSelColor"]:[UIColor whiteColor];
+            self.isArrowLine = [settings valueForKey:@"ArrorLine"]?[[settings valueForKey:@"ArrorLine"] boolValue]:FALSE;
+            
+            //
+            self.iconUrl = [settings valueForKey:@"IconUrl"];
+        }
+        
+        // 添加控件
+        if( self.viewNoralImg )
+        {
+            self.layer.contents = (id)(self.viewNoralImg).CGImage;      // 默认没选中状态
+        }
+        
+        int viewWidth = CGRectGetWidth(self.frame);
+        
+        // view上的图片及文字
+        if( self.btnNormalImg )
+        {
+            CGSize imageSize = [self.btnNormalImg size];
+            // 重数据库里读出来的图，宽、高要写死
+            btnImageView = [[PAAsynDownloadImageView alloc] initWithFrame:CGRectMake((viewWidth-(int)imageSize.width)/2,0,imageSize.width,imageSize.height)];
+            btnImageView.userInteractionEnabled = YES;
+            btnImageView.asynDownloadDelegate = self;
+            btnImageView.layer.contents = (id)(self.btnNormalImg).CGImage;
+            [self addSubview:btnImageView];
+            [btnImageView release];
+            
+            //
+            if( [self.iconUrl length]>0 )
+            {
+                // 不要下载了
+                // [btnImageView loadImageFromURL:[NSURL URLWithString:self.iconUrl]];
+            }
+        }
+        
+        // home_icon_sel@2x
+        UIImage* selImage_f = [UIImage imageNamed:@"home_icon_sel.png"];
+        btnSelView = [[UIImageView alloc] initWithFrame:CGRectMake(0,0,selImage_f.size.width,selImage_f.size.height)];
+        btnSelView.image = selImage_f;
+        btnSelView.userInteractionEnabled = YES;
+        
+        // 添加显示文本
+        if( self.showTitle.length>0 )
+        {
+            CGSize fontSize = [self.showTitle sizeWithFont:self.showTitleFont];
+            // 要添加换行处理［默认6个字一行］
+            int row_f = 1;
+            CGSize titleWidth_f = [@"我的测试测试" sizeWithFont:self.showTitleFont];
+            NSString* showTitle_f = self.showTitle;
+            if( self.showTitle.length>Max_Line_Title_Count )
+            {
+                row_f = 2;
+                showTitle_f = [NSString stringWithFormat:@"%@\n%@",[self.showTitle substringWithRange:NSMakeRange(0,Max_Line_Title_Count)],
+                               [self.showTitle substringWithRange:NSMakeRange(Max_Line_Title_Count,self.showTitle.length-Max_Line_Title_Count)]];
+            }
+            //titleWidth_f.width = titleWidth_f.width>fontSize.width?fontSize.width:titleWidth_f.width;
+            titleLable = [[UILabel alloc] initWithFrame:CGRectMake((viewWidth-titleWidth_f.width)/2,0,titleWidth_f.width,fontSize.height)];
+            [titleLable setFont:self.showTitleFont];
+            [titleLable setText:showTitle_f];
+            [titleLable setLineBreakMode:NSLineBreakByWordWrapping];
+            titleLable.numberOfLines = row_f;
+            [titleLable setBackgroundColor:[UIColor clearColor]];
+            [titleLable setTextColor:self.showNormalColor];     // 默认为没有选中
+            [titleLable setTextAlignment:NSTextAlignmentCenter];
+            titleLable.clipsToBounds = NO;
+            [self addSubview:titleLable];
+            [titleLable release];
+        }
+        
+    }
+    return self;
+}
+
+-(void)layoutSubviews{
+    // 调整控件的frame
+    int viewHeight = CGRectGetHeight(self.frame);
+    int viewWidth = CGRectGetWidth(self.frame);
+    
+    int btnHeight = 0;
+    int btnWidth = 0;
+    if(btnImageView)
+    {
+        btnHeight = CGRectGetHeight(btnImageView.frame);
+        btnWidth = CGRectGetWidth(btnImageView.frame);
+    }
+    
+    int lableHeight = 0;
+    int lableWidth = 0;
+    if( titleLable )
+    {
+        btnHeight = 60;
+        lableHeight = CGRectGetHeight(titleLable.frame);
+        lableWidth = CGRectGetWidth(titleLable.frame);
+        // 需要调节高度
+        if( self.showTitle.length>Max_Line_Title_Count )
+        {
+            lableHeight = 15;
+        }
+    }
+    
+    CGRect tempFrame;
+    if( !self.isArrowLine )      // 垂直排列
+    {
+        int init_y = (viewHeight-btnHeight-lableHeight)/2;
+        //int init_x = (viewWidth-btnWidth-lableWidth-5)/2;
+        
+        if(btnImageView)
+        {
+            tempFrame = btnImageView.frame;
+            if( self.typeTag==UIImageView_Foot_Tag_Type )
+            {
+                init_y +=3;
+            }
+            tempFrame.origin.y = init_y;
+            
+            [btnImageView setFrame:tempFrame];
+        }
+        
+        init_y += btnHeight;
+        if( titleLable )
+        {
+            // 需要调节高度
+            if( self.showTitle.length>Max_Line_Title_Count )
+            {
+                tempFrame = titleLable.frame;
+                tempFrame.origin.y = init_y;
+                if( tempFrame.size.height<=Max_Line_Title_Height )
+                {
+                    tempFrame.size.height += 15;
+                }
+                [titleLable setFrame:tempFrame];
+                [titleLable setNeedsDisplay];
+            }
+            else
+            {
+                tempFrame = titleLable.frame;
+                tempFrame.origin.y = init_y;
+                [titleLable setFrame:tempFrame];
+            }
+            if( self.typeTag==UIImageView_Icon_Add_Type )
+            {
+                titleLable.hidden = YES;
+            }
+        }
+    }
+    else                        // 水平排列
+    {
+        int init_y = (viewHeight-btnHeight-lableHeight)/2;
+        int init_x = (viewWidth-btnWidth-lableWidth)/2;
+        
+        if(btnImageView)
+        {
+            tempFrame = btnImageView.frame;
+            init_y = (viewHeight-CGRectGetHeight(tempFrame))/2;
+            tempFrame.origin.x = init_x;
+            tempFrame.origin.y = init_y;
+            [btnImageView setFrame:tempFrame];
+        }
+        
+        init_x += 5+btnWidth;
+        if( titleLable )
+        {
+            tempFrame = titleLable.frame;
+            init_y = (viewHeight-CGRectGetHeight(tempFrame))/2;
+            tempFrame.origin.x = init_x;
+            tempFrame.origin.y = init_y;
+            [titleLable setFrame:tempFrame];
+        }
+    }
+}
+
+-(void)changeBtnImage:(UIImage*)btnImage Height:(UIImage*)selectImage
+{
+    if( btnImageView )
+    {
+        if( btnImage )
+        {
+            self.btnNormalImg = btnImage;
+            //[btnImageView setImage:btnImage];
+            btnImageView.layer.contents = (id)(self.btnNormalImg).CGImage;
+        }
+        if( selectImage )
+        {
+            self.btnSelectImg = selectImage;
+        }
+    }
+
+}
+
+-(void)setSubViewLight:(BOOL)isLight
+{
+    if( isLight )
+    {
+        // 添加控件
+        if( self.viewSelectImg )
+        {
+            self.layer.contents = (id)(self.viewSelectImg).CGImage;      // 默认没选中状态
+        }
+        
+        if( btnImageView )
+        {
+            if( btnSelectImg )
+            {
+                btnImageView.layer.contents = (id)(self.btnSelectImg).CGImage;
+            }
+            else
+            {
+                [btnImageView addSubview:btnSelView];
+            }
+        }
+        
+        if( titleLable )
+        {
+            [titleLable setTextColor:self.showSelectColor];
+        }
+    }
+    else
+    {
+        // 添加控件
+        if( self.viewNoralImg )
+        {
+            self.layer.contents = (id)(self.viewNoralImg).CGImage;      // 默认没选中状态
+        }
+        
+        if( btnImageView )
+        {
+            btnImageView.layer.contents = (id)(self.btnNormalImg).CGImage;
+        }
+        
+        [btnSelView removeFromSuperview];
+        
+        if( titleLable )
+        {
+            [titleLable setTextColor:self.showNormalColor];
+        }
+    }
+}
+
+
+/*
+ 启动编辑状态的动画
+ */
+-(void)actionOfEdit
+{
+    if( curTransFlag )
+	{
+		curTransAngel += 1.5*0.0174;//[3.14/180];
+		if( curTransAngel>=1.5*0.0174 )
+			curTransFlag = FALSE;
+	}
+	else
+	{
+		curTransAngel -= 1.5*0.0174;
+		if( curTransAngel<=-1.5*0.0174 )
+			curTransFlag = TRUE;
+	}
+    
+	
+	[CATransaction begin];
+	[CATransaction setAnimationDuration:0];
+	self.transform = CGAffineTransformMakeRotation(curTransAngel);
+	[CATransaction commit];
+}
+
+-(BOOL)isActionFlag
+{
+    return self.isEidtFlag;
+}
+
+-(void)startEditAction
+{
+    // 原来有的状态保存
+    if( !self.isEidtFlag && self.typeTag==UIImageView_Diy_Tag_Type )
+    {
+        // 启动抖动动画
+        if( self.editTimer )
+        {
+            [self stopEditAction];
+        }
+        // 添加编辑状态icon
+        if( !editIcon )
+        {
+            UIImage* icon_f = [UIImage imageNamed:@"home_icon_delete.png"];
+            CGSize imageSize_f = [icon_f size];
+            editIcon = [[UIImageView alloc] initWithFrame:CGRectMake(-6,-8,imageSize_f.width,imageSize_f.height)];
+            editIcon.userInteractionEnabled = YES;
+            editIcon.image = icon_f;
+        }
+        [self addSubview:editIcon];
+        [self bringSubviewToFront:editIcon];
+        
+        self.editTimer = [NSTimer scheduledTimerWithTimeInterval:0.05
+                                                       target:self
+                                                     selector:@selector(actionOfEdit)
+                                                     userInfo:nil
+                                                      repeats:YES];
+        self.isEidtFlag = TRUE;
+    }
+    
+}
+
+
+-(void)stopEditAction
+{
+    if( self.editTimer )
+    {
+        [self.editTimer invalidate];
+        self.editTimer = nil;
+    }
+    [editIcon removeFromSuperview];    
+}
+
+-(void)consumeAction
+{
+    [self stopEditAction];
+    
+    self.isEidtFlag = FALSE;
+    [CATransaction begin];
+	[CATransaction setAnimationDuration:0];
+	self.transform = CGAffineTransformMakeRotation(0.0);
+	[CATransaction commit];
+}
+
+
+
+-(BOOL)judgeDelete:(CGPoint)point
+{
+    if( !self.isEidtFlag )
+        return FALSE;
+    if( ABS(point.x)<Tag_Delete_Frame_V &&
+        ABS(point.y)<Tag_Delete_Frame_V )
+    {
+        return TRUE;
+    }
+    return FALSE;
+}
+
+/*　触摸事件开始时的处理函数　*/
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+	UITouch *touch = [touches anyObject];
+	CGPoint curPoint = [touch locationInView:self];
+	touchBeginPoint = curPoint;
+    if ([touches count]>=2)
+        return;
+    
+    // footbar特殊处理
+    if( self.typeTag==UIImageView_Foot_Tag_Type )
+    {
+        if( [curDelegate respondsToSelector:@selector(handleImageViewWithTouchUp:)] )
+        {
+            [curDelegate handleImageViewWithTouchUp:self];
+        }
+        return;
+    }
+	
+    // 有选中状态
+    if( self.typeTag!=UIImageView_NoSelect_Tag_Type /*&& self.typeTag!=UIImageView_Icon_Add_Type*/ )
+    {
+        [self setSubViewLight:YES];
+    }
+    
+    // NSLog(@"Beg Point:%@",NSStringFromCGPoint(curPoint));
+    
+    if( [self judgeDelete:curPoint] )
+    {
+        NSLog(@"Point:%@",NSStringFromCGPoint(curPoint));
+        UIImage* icon_f = [UIImage imageNamed:@"home_icon_delete_sel.png"];
+        editIcon.image = icon_f;
+        [editIcon setImage:icon_f];
+    }
+        
+    if( [curDelegate respondsToSelector:@selector(handleImageViewWithTouch:Touch:EventType:)] )
+    {
+        [curDelegate handleImageViewWithTouch:self Touch:touches EventType:UIImageView_TouchBegin_Type];
+    }
+}
+
+/*　触摸事件拖动时的处理函数　*/
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    isMoveFlag = TRUE;
+    
+    if ([touches count]>=2)
+		return;
+    if( [curDelegate respondsToSelector:@selector(handleImageViewWithTouch:Touch:EventType:)] )
+    {
+        [curDelegate handleImageViewWithTouch:self Touch:touches EventType:UIImageView_TouchMove_Type];
+    }
+}
+
+
+/*　触摸事件结束时的处理函数　*/
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    UITouch *touch = [touches anyObject];
+	CGPoint curPoint = [touch locationInView:self];
+    NSLog(@"End Point:%@",NSStringFromCGPoint(curPoint));
+    
+    if( !isMoveFlag && (abs(curPoint.x-touchBeginPoint.x)<=Tag_Click_Frame_V && abs(curPoint.y-touchBeginPoint.y)<=Tag_Click_Frame_V) )
+    {
+        // footbar特殊处理
+        if( self.typeTag==UIImageView_Foot_Tag_Type )
+        {
+            return;
+        }
+        
+        // 是自定义拖动
+        if( typeTag==UIImageView_Diy_Tag_Type )
+        {
+            // 还原选中状态
+            [self setSubViewLight:FALSE];
+        }
+        
+        // 删除操作
+        if( self.isEidtFlag && typeTag==UIImageView_Diy_Tag_Type )
+        {
+            UIImage* icon_f = [UIImage imageNamed:@"home_icon_delete.png"];
+            editIcon.image = icon_f;
+            [editIcon setImage:icon_f];
+            
+            if( [self judgeDelete:curPoint] )
+            {
+                if( [curDelegate respondsToSelector:@selector(handleImageViewDelete:)] )
+                {
+                    [curDelegate handleImageViewDelete:self];
+                }
+            }
+        }
+        
+        if( [curDelegate respondsToSelector:@selector(handleImageViewWithTouchUp:)] )
+        {
+            [curDelegate handleImageViewWithTouchUp:self];
+        }
+        
+    }
+    else
+    {
+        // footbar特殊处理
+        if( self.typeTag==UIImageView_Foot_Tag_Type )
+        {
+            return;
+        }
+        
+        // 自定义动化按钮［在一定范围内，点击弹起时不响应事件］
+        if( typeTag==UIImageView_Diy_Tag_Type && (abs(curPoint.x-touchBeginPoint.x)<=Tag_Click_Frame_V && abs(curPoint.y-touchBeginPoint.y)<=Tag_Click_Frame_V) )
+        {
+            isMoveFlag = FALSE;
+            // 还原选中状态
+            [self setSubViewLight:FALSE];
+            
+            // 删除操作
+            if( self.isEidtFlag && typeTag==UIImageView_Diy_Tag_Type )
+            {
+                UIImage* icon_f = [UIImage imageNamed:@"home_icon_delete.png"];
+                editIcon.image = icon_f;
+                [editIcon setImage:icon_f];
+                
+                if( [self judgeDelete:curPoint] )
+                {
+                    if( [curDelegate respondsToSelector:@selector(handleImageViewDelete:)] )
+                    {
+                        [curDelegate handleImageViewDelete:self];
+                    }
+                }
+            }
+            
+            // 当范围比较小时，当点击事件处理
+            if( [curDelegate respondsToSelector:@selector(handleImageViewWithTouchUp:)] )
+            {
+                [curDelegate handleImageViewWithTouchUp:self];
+            }
+
+            return;
+        }
+        
+        // 点击事件单独处理？
+        if( (self.typeTag==UIImageView_Default_Tag_Type||self.typeTag==UIImageView_Icon_Add_Type) && (abs(curPoint.x-touchBeginPoint.x)<=Tag_Click_Frame_V && abs(curPoint.y-touchBeginPoint.y)<=Tag_Click_Frame_V))
+        {
+            isMoveFlag = FALSE;
+            // 还原选中状态
+            [self setSubViewLight:FALSE];
+            if( [curDelegate respondsToSelector:@selector(handleImageViewWithTouchUp:)] )
+            {
+                [curDelegate handleImageViewWithTouchUp:self];
+            }
+            return;
+        }
+        else if( (self.typeTag==UIImageView_Default_Tag_Type || self.typeTag==UIImageView_Icon_Add_Type) )
+        {
+            isMoveFlag = FALSE;
+            // 还原选中状态
+            [self setSubViewLight:FALSE];
+            return;
+        }
+        
+        // 删除操作
+        if( self.isEidtFlag && typeTag==UIImageView_Diy_Tag_Type )
+        {
+            UIImage* icon_f = [UIImage imageNamed:@"home_icon_delete.png"];
+            editIcon.image = icon_f;
+            [editIcon setImage:icon_f];
+        }
+        
+        if( [curDelegate respondsToSelector:@selector(handleImageViewWithTouch:Touch:EventType:)] )
+        {
+            [curDelegate handleImageViewWithTouch:self Touch:touches EventType:UIImageView_TouchEnd_Type];
+        }
+    }
+    isMoveFlag = FALSE;
+    
+}
+
+
+/*　触摸事件被取消时的处理函数　*/
+- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    isMoveFlag = FALSE;
+    
+    // footbar特殊处理
+    if( self.typeTag==UIImageView_Foot_Tag_Type )
+    {
+        return;
+    }
+    
+    if( (self.typeTag==UIImageView_Default_Tag_Type||self.typeTag==UIImageView_Icon_Add_Type) )
+    {
+        [self setSubViewLight:NO];
+    }
+    
+    // 删除操作
+    if( self.isEidtFlag && typeTag==UIImageView_Diy_Tag_Type )
+    {
+        UIImage* icon_f = [UIImage imageNamed:@"home_icon_delete.png"];
+        editIcon.image = icon_f;
+        [editIcon setImage:icon_f];
+        
+    }
+    
+    if( [curDelegate respondsToSelector:@selector(handleImageViewWithTouch:Touch:EventType:)] )
+    {
+        [curDelegate handleImageViewWithTouch:self Touch:touches EventType:UIImageView_TouchCancel_Type];
+    }
+}
+
+/*  PAAsynDownloadImageViewDelegate */
+- (void)asynDownloadImageViewDidFinishLoading:(PAAsynDownloadImageView*)asynDownloadImageView
+{
+    if( [curDelegate respondsToSelector:@selector(handleImageViewWithTouch:Touch:EventType:)] )
+    {
+        [curDelegate handleImageDownLoad:self Image:asynDownloadImageView.image];
+    }
+}
+
+@end

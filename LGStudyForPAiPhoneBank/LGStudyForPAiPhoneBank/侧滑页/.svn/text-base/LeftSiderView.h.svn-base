@@ -1,0 +1,27 @@
+//
+//  LeftSiderView.h
+//  PAiPhoneBank2.0
+//
+//  Created by xiao on 5/20/13.
+//  Copyright (c) 2013 da zhan. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface LeftSiderView : UIView<UITableViewDataSource,UITableViewDelegate>{
+    UITableView *m_pTableView;
+    BOOL isLogined;
+    NSDictionary *loginInfo;
+    UIButton *settingButton;
+    NSString *hintImageName;
+    NSString *noticeNum;
+}
+@property(nonatomic,retain) UIButton *settingButton;
+@property(nonatomic,retain) NSDictionary *loginInfo;
+@property(nonatomic,retain) NSString *hintImageName;
+@property(nonatomic,retain) NSString *noticeNum;
+-(void)handleLoginWithInfo:(NSDictionary *)info;
+-(void)handleLogout;
+-(void)refreshPersonHintWithImg:(NSString *)fileName hintMsg:(NSString *)hintMsg;
+-(void)refreshNoticeNum:(NSString *)num;
+@end

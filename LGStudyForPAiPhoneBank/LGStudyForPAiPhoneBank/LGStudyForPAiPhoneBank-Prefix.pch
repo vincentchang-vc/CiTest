@@ -1,0 +1,44 @@
+//
+// Prefix header for all source files of the 'LGStudyForPAiPhoneBank' target in the 'LGStudyForPAiPhoneBank' project
+//
+
+#import <Availability.h>
+
+#ifndef __IPHONE_3_0
+#warning "This project uses features only available in iOS SDK 3.0 and later."
+#endif
+
+#ifdef __OBJC__
+    #import <UIKit/UIKit.h>
+    #import <Foundation/Foundation.h>
+#endif
+
+#define RELEASE_SAFELY(_a) do{id a = _a; [a release]; a = nil;}while(0)
+#define RETAIN_SAFELY(_a, _b) do{id a = _a; id b = _b; if(a != b) {[a release]; a = [b retain];}}while(0)
+
+
+//-----------
+#define HTML_TEST   @"test123"
+
+#define ISURL  NO
+
+#define URL_STRING @"https://bank.pingan.com.cn/ibp/PAEBank/index.html"
+
+#define OPEN_PAGETOFIT NO
+
+#define ISLGWEB  YES
+
+
+//----------
+#define kScreenSize           [[UIScreen mainScreen] bounds].size                 //(e.g. 320,480)
+#define kScreenWidth          [[UIScreen mainScreen] bounds].size.width           //(e.g. 320)
+#define kScreenHeight         [[UIScreen mainScreen] bounds].size.height          //包含状态bar的高度(e.g. 480)
+
+#define kApplicationSize      [[UIScreen mainScreen] applicationFrame].size       //(e.g. 320,460)
+#define kApplicationWidth     [[UIScreen mainScreen] applicationFrame].size.width //(e.g. 320)
+#define kApplicationHeight    [[UIScreen mainScreen] applicationFrame].size.height//不包含状态bar的高度(e.g. 460)
+
+#define kStatusBarHeight      20
+#define kNavigationBarHeight  44
+
+#define kContentHeight        (kApplicationHeight - kNavigationBarHeight)

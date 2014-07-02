@@ -1,0 +1,20 @@
+//
+//  LeftSiderViewController.h
+//  PAiPhoneBank2.0
+//
+//  Created by xiao on 5/20/13.
+//  Copyright (c) 2013 da zhan. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "LeftSiderView.h"
+
+@interface LeftSiderViewController : UIViewController{
+    LeftSiderView *leftSiderView;
+}
++(LeftSiderViewController*)shareInstance;
+-(void)handleLoginWithInfo:(NSDictionary *)info;
+-(void)handleLogout;
+-(void)refreshPersonHintWithImg:(NSString *)fileName hintMsg:(NSString *)hintMsg;
+-(void)refreshNoticeNum:(NSString *)num;
+@end

@@ -1,0 +1,39 @@
+//
+//  CommonMenuController.h
+//  PAiPhoneBank2.0
+//
+//  Created by xbx on 13-5-12.
+//  Copyright (c) 2013年 da zhan. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "WebViewCache.h"
+#import "PACommTools.h"
+
+typedef enum _Bank_Web_Load_Type{
+    Bank_Web_Load_Start_Type = 0x40,
+    Bank_Web_Load_End_Type = 0x41,
+    Bank_Web_Load_Error_Type = 0x42,
+}Bank_Web_Load_Type;
+
+@interface CommonMenuController : CDVViewController<PAWebCacheDelegate>
+{
+    Bank_Web_Load_Type isLoadSatus;
+}
+
+@property(nonatomic) Bank_Web_Load_Type isLoadSatus;
+
++(CommonMenuController*)shareCommonMenu;
+-(void)jmpRouterPage:(NSString*)router;
+-(void)showFootBar:(BOOL)flag;
+-(void)showHeader:(NSArray *)titles delegate:(PACommTools *)delegate;
+-(void)setNavButton:(NSArray *)titles delegate:(PACommTools *)delegate;
+-(void)setNavButtonEnabled:(NSArray *)titles delegate:(PACommTools *)delegate;
+/* 刷新界面 */
+-(void)falshWebView;
+/* 重新加载pawa */
+-(void)reloadWebView;
+-(void)loadWebview;
+/* 重复点击 */
+-(void)changeTable;
+@end

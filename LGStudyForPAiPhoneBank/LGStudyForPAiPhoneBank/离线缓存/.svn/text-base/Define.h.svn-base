@@ -1,0 +1,45 @@
+//
+//  Define.h
+//  WebViewCacheDemo
+//
+//  Created by coson on 13-4-28.
+//  Copyright (c) 2013年 coson. All rights reserved.
+//
+
+#ifndef WebViewCacheDemo_Define_h
+#define WebViewCacheDemo_Define_h
+
+#if ENVIRENTMENT==0
+#define HOST_SERVER_IP       @"https://bank.pingan.com.cn/ibp"
+#elif ENVIRENTMENT==1
+#define HOST_SERVER_IP       @"https://ibp-stg3.pingan.com.cn/ibp"
+#elif ENVIRENTMENT==2
+#define HOST_SERVER_IP       @"https://ibank-ibp-stg4.dmzstg.pingan.com.cn/ibp"
+#elif ENVIRENTMENT==3
+#define HOST_SERVER_IP       @"https://ibank-ibp-sit.banktest.paic.com.cn/ibp"
+#elif ENVIRENTMENT==4
+#define HOST_SERVER_IP       @"http://ibp-stg3.pingan.com.cn:8080/ibp"
+#elif ENVIRENTMENT==5
+#define HOST_SERVER_IP       @"http://ibp-stg4.pingan.com.cn:8080/ibp"
+#else
+#define HOST_SERVER_IP       @"自己的HOST_SERVER_IP"
+#endif
+
+#define HOST_SERVER_PATH     @"/PAEBank/"
+#define HOST_SERVER_URL      @"index.html"
+
+//沙盒下manifest目录
+#define LOCAL_MANIFEST_PATH  @"manifest"
+//沙盒下manifest/assets目录
+#define LOCAL_ASSETS_PATH    @"auto"
+//沙盒下manifest/temp目录
+#define LOCAL_TEMP_PATH      @"temp"
+//沙盒下manifest/version.json文件
+#define LOCAL_VERSION_PATH      @"version.json"
+//沙盒下manifest/manifest.json文件
+#define LOCAL_MANIFESTFILE_PATH      @"PAEBank.json"
+//沙盒下manifest/version文件
+#define LOCAL_VERSIONDIC_PATH      @"sversion"
+
+
+#endif

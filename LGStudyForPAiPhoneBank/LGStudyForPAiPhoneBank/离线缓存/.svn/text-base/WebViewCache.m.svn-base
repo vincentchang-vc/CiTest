@@ -1,0 +1,1200 @@
+//
+//  WebViewCache.m
+//  WebViewCacheDemo
+//
+//  Created by coson on 13-4-18.
+//  Copyright (c) 2013年 coson. All rights reserved.
+//
+
+#import "WebViewCache.h"
+#import "JSONKit.h"
+#import "Sqlite3Operation.h"
+#import "LoadingHistoryInfo.h"
+#import "PAWebCache.h"
+#import "RegexKitLite.h"
+#import "NSString_extra.h"
+#import "ZipArchive.h"
+
+
+@implementation WebViewCache
+@synthesize bIsLoadingFinish,bIsNeenNet;
+@synthesize jsonUrl,versionUrl,serviceVersion,jsonName,versionName;
+@synthesize fileDictionary;
+@synthesize cachedResponses;
+@synthesize bIsForce;
+@synthesize progressAlert;
+
+static WebViewCache * webViewCache = nil;
+int downLoadProgress = 0;
+
++(WebViewCache*)shareInstance
+{
+    @synchronized(self)
+    {
+        if (!webViewCache)
+        {
+            webViewCache = [[WebViewCache alloc] init];
+        }
+	}
+    return webViewCache;
+}
+
+-(id)init
+{
+    if (self = [super init])
+    {
+        localSaveInfoArray = [[NSMutableArray alloc] initWithCapacity:0];
+        serverInfoArray = [[NSMutableArray alloc] initWithCapacity:0];
+        sqliteHistory = [[NSMutableArray alloc] initWithCapacity:0];
+        versionData = [[NSMutableData alloc] initWithCapacity:0];
+        jsonData = [[NSMutableData alloc] initWithCapacity:0];
+        cachedResponses = [[NSMutableDictionary alloc] init];
+        bIsForce = NO;
+        bIsNeenNet = NO;
+        webview = [[UIWebView alloc] init];
+        for (id view in webview.subviews)
+        {
+            if ([[view class] isSubclassOfClass:[UIScrollView class]])
+                ((UIScrollView *)view).bounces = NO;
+        }
+        webview.scalesPageToFit = YES;
+        webview.delegate = self;
+        totalUrlRequest = 0;
+        //[self checkUpdataClient];
+        
+    }
+    return self;
+}
+
+-(void)checkUpdataClient
+{
+    NSString *storedVersion = nil;
+    if ([[NSUserDefaults standardUserDefaults] valueForKey:@"versionInfo"]) {
+        storedVersion = [[NSUserDefaults standardUserDefaults] valueForKey:@"versionInfo"];
+    }
+    NSDictionary *infoDict = [[NSBundle mainBundle] infoDictionary];
+    NSString *appVersion = [infoDict valueForKey:@"CFBundleVersion"];
+    if (!storedVersion || [appVersion compare:storedVersion] == NSOrderedDescending)
+    {
+        [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"unzipSuccess"];
+        
+        NSDictionary *infoDict = [[NSBundle mainBundle] infoDictionary];
+        NSString *appVersion = [infoDict valueForKey:@"CFBundleVersion"];
+        [[NSUserDefaults standardUserDefaults] setValue:appVersion forKey:@"versionInfo"];
+        
+        /* 将版本号保存在本地 */
+        [[NSUserDefaults standardUserDefaults] synchronize];
+        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+        NSString *documentsDirectory = [paths objectAtIndex:0];
+        NSString *documentDBFolderPath = [documentsDirectory stringByAppendingPathComponent:LOCAL_MANIFEST_PATH];
+        
+        [self deleteDirectory:documentDBFolderPath];
+    }
+}
+
+- (void)setDelegate:(id)pDelegate
+{
+    bIsLoadingFinish = NO;
+    if (delegate)
+    {
+        [delegate release];
+        
+        delegate = nil;
+    }
+    if (pDelegate)
+    {
+        delegate = [pDelegate retain];
+    }
+}
+
+- (void)loadURL:(NSString *)URLString
+{
+    if (webview.loading)
+    {
+        [webview stopLoading];
+    }
+    [webview loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:URLString]]];
+}
+
+-(void)createDirectory:(NSString*)directory
+{
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSError *error;
+    if (![fileManager fileExistsAtPath:directory])
+    {
+        [fileManager createDirectoryAtPath:directory withIntermediateDirectories:YES attributes:nil error:&error];
+    }
+}
+
+-(void)createTempDirectory
+{
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    NSString *documentDBFolderPath = [documentsDirectory stringByAppendingFormat:@"/%@/%@",LOCAL_MANIFEST_PATH,LOCAL_TEMP_PATH];
+    [self createDirectory:documentDBFolderPath];
+}
+
+//Function:移动文件夹目录到指定文件夹
+//Path：拷贝到文件夹得目标路径
+-(void) copyDirectory:(NSString *)directory {
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSError *error;
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    NSString *documentDBFolderPath = [documentsDirectory stringByAppendingPathComponent:directory];
+    NSString *resourceDBFolderPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:directory];
+    
+    if (![fileManager fileExistsAtPath:documentDBFolderPath])
+    {
+        [fileManager createDirectoryAtPath:documentDBFolderPath withIntermediateDirectories:YES attributes:nil error:&error];
+    }
+    else
+    {
+        //[NSURLCache setSharedURLCache:[PAWebCache shareInstance]];
+        //fileDictionary = [[NSMutableDictionary alloc] initWithDictionary:[self getFileDictionary]];
+        return;
+    }
+    
+    NSArray *fileList = [fileManager contentsOfDirectoryAtPath:resourceDBFolderPath error:&error];
+    for (NSString *s in fileList)
+    {
+        NSString *newFilePath = [documentDBFolderPath stringByAppendingPathComponent:s];
+        NSString *oldFilePath = [resourceDBFolderPath stringByAppendingPathComponent:s];
+        if (![fileManager fileExistsAtPath:newFilePath])
+        {
+            [fileManager copyItemAtPath:oldFilePath toPath:newFilePath error:&error];
+            //[fileManager moveItemAtPath:oldFilePath toPath:newFilePath error:&error];
+        }
+    }
+    
+    //[NSURLCache setSharedURLCache:[PAWebCache shareInstance]];
+    //fileDictionary = [[NSMutableDictionary alloc] initWithDictionary:[self getFileDictionary]];
+}
+
+-(void)sendVersionUrl
+{
+    //NSString * cacheUrl = [NSString stringWithFormat:@"%@%@%@",HOST_SERVER_IP,HOST_SERVER_PATH,HOST_SERVER_URL];
+    //[[NetController shareNetController] sendRequestWithID:20002 CustomURLString:customUrlType Body:cacheUrl CallBackDelegate:self RemovePreviousRequest:NO];
+    self.versionUrl = [NSString stringWithFormat:@"%@%@%@",HOST_SERVER_IP,HOST_SERVER_PATH,LOCAL_VERSION_PATH];
+    self.jsonUrl = [NSString stringWithFormat:@"%@%@%@",HOST_SERVER_IP,HOST_SERVER_PATH,LOCAL_MANIFESTFILE_PATH];
+    self.versionName = LOCAL_VERSION_PATH;
+    self.jsonName = LOCAL_MANIFESTFILE_PATH;
+    [[NetController shareNetController] sendRequestWithID:20000 CustomURLString:customUrlType Body:self.versionUrl CallBackDelegate:self RemovePreviousRequest:NO];
+}
+
+-(NSString*) getDocumentPath
+{
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    return documentsDirectory;
+}
+
+
+-(void) writeToFile:(NSData*)data path:(NSString*)path
+{
+    NSString * stringData = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    NSError *error;
+    [stringData writeToFile:path atomically:YES encoding:NSUTF8StringEncoding error:&error];
+}
+
+
+-(NSData*)getFileData:(NSString*)Path
+{
+    NSData * data = [NSData dataWithContentsOfFile:Path];
+    return data;
+}
+
+-(NSDictionary*)DataConversionToDictionary:(NSData*)data
+{
+    NSDictionary *obj = (NSDictionary *)[data objectFromJSONDataWithParseOptions:JKParseOptionNone];
+    return obj;
+}
+
+-(NSDictionary*)getLocalFileInfo:(NSString*)path
+{
+    NSData * data = [NSData dataWithContentsOfFile:path];
+    NSDictionary *obj = (NSDictionary *)[data objectFromJSONDataWithParseOptions:JKParseOptionNone];
+    //NSString * str = [obj objectForKey:@"rootpath"];
+    NSString * str = @"";
+    NSDictionary *directory = [obj objectForKey:@"wwwroot"];
+    [self loopToGetFile:directory fileName:str];
+    return nil;
+}
+
+-(void)loopToGetFile:(NSDictionary*)directory fileName:(NSString*)name
+{
+    for (NSDictionary *dict in directory)
+    {
+        NSString * folder = [dict objectForKey:@"folder"];
+        if (folder)
+        {
+            NSString * nodeName = [dict objectForKey:@"name"];
+            NSString * lastTime = [dict objectForKey:@"lastModified"];
+            NSString * nodeName1;
+            
+            if ([name length] == 0)
+            {
+                nodeName1 = nodeName;
+            }
+            else
+            {
+                nodeName1 = [name stringByAppendingFormat:@"/%@",nodeName];
+            }
+            NSDictionary *children = [dict objectForKey:@"children"];
+            [localSaveInfoArray addObject:[NSDictionary dictionaryWithObjectsAndKeys:nodeName1,@"nodename",lastTime,@"lastTime", nil]];
+            if (children)
+            {
+                [self loopToGetFile:children fileName:nodeName1];
+            }
+        }
+        else
+        {
+            NSString * nodeName = [dict objectForKey:@"name"];
+            NSString * lastTime = [dict objectForKey:@"lastModified"];
+            NSString * nodeName1 = [name stringByAppendingFormat:@"/%@",nodeName];
+            [localSaveInfoArray addObject:[NSDictionary dictionaryWithObjectsAndKeys:nodeName1,@"nodename",lastTime,@"lastTime", nil]];
+        }
+    }
+}
+
+-(void)compareDataToUpdate:(NSDictionary*)dictionary
+{
+    //NSString * str = [dictionary objectForKey:@"rootpath"];
+    NSString * str = @"";
+    NSDictionary *directory = [dictionary objectForKey:@"wwwroot"];
+    [self loopTocompareData:directory fileName:str];
+}
+
+-(void)loopTocompareData:(NSDictionary*)directory fileName:(NSString*)name
+{
+    for (NSDictionary *dict in directory)
+    {
+        NSString * folder = [dict objectForKey:@"folder"];
+        if (folder)
+        {
+            NSString * nodeName = [dict objectForKey:@"name"];
+            NSString * lastTime = [dict objectForKey:@"lastModified"];
+            NSString * nodeName1;
+            
+            if ([name length] == 0)
+            {
+                nodeName1 = nodeName;
+            }
+            else
+            {
+                nodeName1 = [name stringByAppendingFormat:@"/%@",nodeName];
+            }
+            
+            
+            BOOL bFind = NO;
+            for (int i = 0; i < [localSaveInfoArray count]; i++)
+            {
+                NSDictionary * dic = (NSDictionary *)[localSaveInfoArray objectAtIndex:i];
+                NSString * localName = [dic objectForKey:@"nodename"];
+                if ([localName isEqualToString:nodeName1])
+                {
+                    NSString * localTime = [dic objectForKey:@"lastTime"];
+                    if (![localTime isEqualToString:lastTime])
+                    {
+                        NSDictionary *children = [dict objectForKey:@"children"];
+                        if (children)
+                        {
+                            [self loopTocompareData:children fileName:nodeName1];
+                        }
+                    }
+                    bFind = YES;
+                    break;
+                }
+            }
+            if (!bFind)
+            {
+                NSFileManager *fileManager = [NSFileManager defaultManager];
+                NSError * error;
+                NSString * directory = [NSString stringWithFormat:@"%@/%@/%@/%@", [self getDocumentPath],LOCAL_MANIFEST_PATH,LOCAL_ASSETS_PATH,nodeName1];
+                if (![fileManager fileExistsAtPath:directory])
+                {
+                    [fileManager createDirectoryAtPath:directory withIntermediateDirectories:YES attributes:nil error:&error];
+                }
+
+                NSDictionary *children = [dict objectForKey:@"children"];
+                if (children)
+                {
+                    [self loopTocompareData:children fileName:nodeName1];
+                }
+            }
+        }
+        else
+        {
+            NSString * nodeName = [dict objectForKey:@"name"];
+            NSString * lastTime = [dict objectForKey:@"lastModified"];
+            NSString * nodeName1 = [name stringByAppendingFormat:@"/%@",nodeName];
+            BOOL bFind = NO;
+            for (int i = 0; i < [localSaveInfoArray count]; i++)
+            {
+                NSDictionary * dic = [localSaveInfoArray objectAtIndex:i];
+                NSString * localName = [dic objectForKey:@"nodename"];
+                if ([localName isEqualToString:nodeName1])
+                {
+                    NSString * localTime = [dic objectForKey:@"lastTime"];
+                    if (![localTime isEqualToString:lastTime])
+                    {
+                        if ([sqliteHistory count] == 0)
+                        {
+                            LoadingHistoryInfo * info = [[LoadingHistoryInfo alloc] init];
+                            info.ID = 1;
+                            info.loadUrl = [NSString stringWithFormat:@"%@%@%@",HOST_SERVER_IP,HOST_SERVER_PATH,nodeName1];
+                            info.localPath = nodeName1;
+                            info.loadState = @"0";
+                            
+                            [[Sqlite3Operation share] insertOneLoadingHistory:info];
+                            
+//                            [[NetController shareNetController] sendRequestWithID:info.ID CustomURLString:customUrlType Body:info.loadUrl CallBackDelegate:self RemovePreviousRequest:NO];
+                            [[NetController shareNetController] sendNoParserRequestWithID:info.ID CustomURLString:customUrlType Body:info.loadUrl CallBackDelegate:self RemovePreviousRequest:NO];
+                            [info release];
+                            [sqliteHistory removeAllObjects];
+                            [[Sqlite3Operation share] getLoadingHistoryInfo:sqliteHistory];
+                        }
+                        else
+                        {
+                            BOOL bHave = NO;
+                            for (int n = 0; n < [sqliteHistory count]; n++)
+                            {
+                                LoadingHistoryInfo * info = [sqliteHistory objectAtIndex:n];
+                                if ([info.localPath isEqualToString:nodeName1])
+                                {
+                                    bHave = YES;
+                                    if ([info.loadState intValue] == 0)
+                                    {
+                                        [[NetController shareNetController] sendNoParserRequestWithID:info.ID CustomURLString:customUrlType Body:info.loadUrl CallBackDelegate:self RemovePreviousRequest:NO];
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    }
+                                }
+                            }
+                            if (bHave == NO)
+                            {
+                                LoadingHistoryInfo * _info = [[LoadingHistoryInfo alloc] init];
+                                _info.ID = [[Sqlite3Operation share] getLastLoadingHistory] + 1;
+                                _info.loadUrl = [NSString stringWithFormat:@"%@%@%@",HOST_SERVER_IP,HOST_SERVER_PATH,nodeName1];
+                                _info.localPath = nodeName1;
+                                _info.loadState = @"0";
+                                
+                                [[Sqlite3Operation share] insertOneLoadingHistory:_info];
+                                
+                                [[NetController shareNetController] sendNoParserRequestWithID:_info.ID CustomURLString:customUrlType Body:_info.loadUrl CallBackDelegate:self RemovePreviousRequest:NO];
+                                [_info release];
+                                [sqliteHistory removeAllObjects];
+                                [[Sqlite3Operation share] getLoadingHistoryInfo:sqliteHistory];
+                            }
+                        }
+                    }
+                    bFind = YES;
+                    break;
+                }
+            }
+            if (!bFind)
+            {
+                if ([sqliteHistory count] == 0)
+                {
+                    LoadingHistoryInfo * info = [[LoadingHistoryInfo alloc] init];
+                    info.ID = 1;
+                    info.loadUrl = [NSString stringWithFormat:@"%@%@%@",HOST_SERVER_IP,HOST_SERVER_PATH,nodeName1];
+                    info.localPath = nodeName1;
+                    info.loadState = @"0";
+                    
+                    [[Sqlite3Operation share] insertOneLoadingHistory:info];
+                    
+                    [[NetController shareNetController] sendNoParserRequestWithID:info.ID CustomURLString:customUrlType Body:info.loadUrl CallBackDelegate:self RemovePreviousRequest:NO];
+                    [info release];
+                    [sqliteHistory removeAllObjects];
+                    [[Sqlite3Operation share] getLoadingHistoryInfo:sqliteHistory];
+                }
+                else
+                {
+                    BOOL bhave = NO;
+                    for (int n = 0; n < [sqliteHistory count]; n++)
+                    {
+                        LoadingHistoryInfo * info = [sqliteHistory objectAtIndex:n];
+                        if ([info.localPath isEqualToString:nodeName1])
+                        {
+                            bhave = YES;
+                            if ([info.loadState intValue] == 0)
+                            {
+                                [[NetController shareNetController] sendNoParserRequestWithID:info.ID CustomURLString:customUrlType Body:info.loadUrl CallBackDelegate:self RemovePreviousRequest:NO];
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                    }
+                    if (bhave == NO)
+                    {
+                        LoadingHistoryInfo * _info = [[LoadingHistoryInfo alloc] init];
+                        _info.ID = [[Sqlite3Operation share] getLastLoadingHistory] + 1;
+                        _info.loadUrl = [NSString stringWithFormat:@"%@%@%@",HOST_SERVER_IP,HOST_SERVER_PATH,nodeName1];
+                        _info.localPath = nodeName1;
+                        _info.loadState = @"0";
+                        
+                        [[Sqlite3Operation share] insertOneLoadingHistory:_info];
+                        [[NetController shareNetController] sendNoParserRequestWithID:_info.ID CustomURLString:customUrlType Body:_info.loadUrl CallBackDelegate:self RemovePreviousRequest:NO];
+//                      [[NetController shareNetController] sendRequestWithID:_info.ID CustomURLString:customUrlType Body:_info.loadUrl CallBackDelegate:self RemovePreviousRequest:NO];
+                        [_info release];
+                        [sqliteHistory removeAllObjects];
+                        [[Sqlite3Operation share] getLoadingHistoryInfo:sqliteHistory];
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+-(NSDictionary*)getServerFileInfo:(NSDictionary*)dict
+{
+    NSString * str = [dict objectForKey:@"rootpath"];
+    NSDictionary *directory = [dict objectForKey:@"wwwroot"];
+    [self loopServerToGetFile:directory fileName:str];
+    return nil;
+}
+
+-(void)loopServerToGetFile:(NSDictionary*)directory fileName:(NSString*)name
+{
+    for (NSDictionary *dict in directory)
+    {
+        NSString * folder = [dict objectForKey:@"folder"];
+        if (folder)
+        {
+            NSString * nodeName = [dict objectForKey:@"name"];
+            NSString * lastTime = [dict objectForKey:@"lastModified"];
+            NSString * nodeName1 = [name stringByAppendingFormat:@"/%@",nodeName];
+            NSDictionary *children = [dict objectForKey:@"children"];
+            [serverInfoArray addObject:[NSDictionary dictionaryWithObjectsAndKeys:nodeName1,@"nodename",lastTime,@"lastTime",folder,@"folder", nil]];
+            if (children)
+            {
+                [self loopServerToGetFile:children fileName:nodeName1];
+            }
+        }
+        else
+        {
+            NSString * nodeName = [dict objectForKey:@"name"];
+            NSString * lastTime = [dict objectForKey:@"lastModified"];
+            NSString * nodeName1 = [name stringByAppendingFormat:@"/%@",nodeName];
+            [serverInfoArray addObject:[NSDictionary dictionaryWithObjectsAndKeys:nodeName1,@"nodename",lastTime,@"lastTime", nil]];
+        }
+    }
+}
+
+-(void)deleteFileAndFolder
+{
+    for (int i = 0; i < [localSaveInfoArray count]; i++)
+    {
+        NSDictionary * localDic = [localSaveInfoArray objectAtIndex:i];
+        NSString * localName = [localDic objectForKey:@"nodename"];
+        BOOL bFind = NO;
+        for (int j = 0; j < [serverInfoArray count]; j++)
+        {
+            NSDictionary * serverDic = [serverInfoArray objectAtIndex:j];
+            NSString * serverName = [serverDic objectForKey:@"nodename"];
+            if ([localName isEqualToString:serverName])
+            {
+                bFind = YES;
+            }
+        }
+        if (!bFind)
+        {
+            NSString * deleteDirectory = [NSString stringWithFormat:@"%@/%@/%@",[self getDocumentPath],LOCAL_MANIFEST_PATH,localName];
+            [self deleteDirectory:deleteDirectory];
+        }
+    }
+}
+
+
+-(void)xmlParser:(NSString*)data
+{
+    NSString * htmlPredicate = @"<meta.*?name=\"manifest\".*?content=\"(.+?)\"";
+    NSString * versionString = [data stringByMatching:htmlPredicate capture:1];
+    NSLog(@"string: %@", versionString);
+    NSArray * array = [versionString componentsSeparatedByString:@"|"];
+    self.versionUrl = [NSString stringWithFormat:@"%@%@%@",HOST_SERVER_IP,HOST_SERVER_PATH,[array objectAtIndex:0]];
+    self.versionName = [array objectAtIndex:0];
+    self.jsonUrl = [NSString stringWithFormat:@"%@%@%@",HOST_SERVER_IP,HOST_SERVER_PATH,[array objectAtIndex:1]];
+    self.jsonName = [array objectAtIndex:1];
+     NSLog(@"%@ start  %@",self.versionUrl,[NSDate date]);
+    [[NetController shareNetController] sendRequestWithID:20000 CustomURLString:customUrlType Body:self.versionUrl CallBackDelegate:self RemovePreviousRequest:NO];
+}
+
+-(void)callBackUpdataDelegate:(NSString*)updataState
+{
+    if ([delegate respondsToSelector:@selector(versionUpdataState:)])
+    {
+        [delegate versionUpdataState:[updataState integerValue]];
+    }
+}
+
+-(void)callBackForceDelegate
+{
+    if ([delegate respondsToSelector:@selector(versionForceFinish)])
+    {
+        [delegate versionForceFinish];
+    }
+}
+
+-(void)callBackSendHttpRequest:(LoadingHistoryInfo*)info
+{
+//    [[NetController shareNetController] sendRequestWithID:info.ID CustomURLString:customUrlType Body:info.loadUrl CallBackDelegate:self RemovePreviousRequest:NO];
+    [[NetController shareNetController] sendNoParserRequestWithID:info.ID CustomURLString:customUrlType Body:info.loadUrl CallBackDelegate:self RemovePreviousRequest:NO];
+}
+
+-(void)callBackGetJsonFile
+{
+    [[NetController shareNetController] sendRequestWithID:20001 CustomURLString:customUrlType Body:self.jsonUrl CallBackDelegate:self RemovePreviousRequest:NO];
+}
+
+
+-(void)callBackNetWork:(NSArray*)array
+{
+    int connectID = [[array objectAtIndex:0] integerValue];
+    NSData  *callBackDictionary = [array objectAtIndex:1];
+    int netState = [[array objectAtIndex:2] integerValue];
+    
+    if (netState == net_Parser_SUCCES || netState == net_image || netState == net_HTML || netState == net_parser_error )
+    {
+        if (connectID == 20002)
+        {
+            //NSString * data = (NSString*)callBackDictionary;
+            NSString * stringData = [[NSString alloc] initWithData:(NSData*)callBackDictionary encoding:NSUTF8StringEncoding];
+            [self xmlParser:stringData];
+            [stringData release];
+            [NSURLCache setSharedURLCache:[PAWebCache shareInstance]];
+            fileDictionary = [[NSMutableDictionary alloc] initWithDictionary:[self getFileDictionary]];
+            return;
+        }
+        if (connectID == 20000)
+        {
+            [NSURLCache setSharedURLCache:[PAWebCache shareInstance]];
+            
+            fileDictionary = [[NSMutableDictionary alloc] initWithDictionary:[self getFileDictionary]];
+            
+            [versionData appendData:(NSData*)callBackDictionary];
+            NSString * versionPath = [NSString stringWithFormat:@"%@/%@/%@/%@",[[WebViewCache shareInstance] getDocumentPath],LOCAL_MANIFEST_PATH,LOCAL_VERSIONDIC_PATH,self.versionName];
+            NSString * _versionPath = [NSString stringWithFormat:@"%@/%@/%@",[[WebViewCache shareInstance] getDocumentPath],LOCAL_MANIFEST_PATH,LOCAL_VERSIONDIC_PATH];
+            [self createDirectory:_versionPath];
+            [versionData writeToFile:versionPath atomically:YES];
+            
+            [[NSUserDefaults standardUserDefaults] setValue:versionPath forKey:@"versionPath"];
+            [[NSUserDefaults standardUserDefaults] synchronize];
+            
+            NSDictionary *obj = (NSDictionary *)[versionData objectFromJSONDataWithParseOptions:JKParseOptionNone];
+            
+            NSString *documentsDirectory = [[WebViewCache shareInstance] getDocumentPath];
+            NSString *documentDBFolderPath = [documentsDirectory stringByAppendingFormat:@"/%@/%@",LOCAL_MANIFEST_PATH,LOCAL_VERSION_PATH];
+            NSData * localData = [self getFileData:documentDBFolderPath];
+            NSDictionary * localDic = [self DataConversionToDictionary:localData];
+            
+            NSString * _localVersion = [localDic objectForKey:@"version"];
+            self.serviceVersion = [obj objectForKey:@"version"];
+            if ([_localVersion intValue] == [self.serviceVersion intValue])
+            {
+                [self performSelectorOnMainThread:@selector(callBackUpdataDelegate:) withObject:@"3" waitUntilDone:NO];
+                return;
+            }
+            
+            NSString * serviceForce = [obj objectForKey:@"support"];
+            
+            NSArray * arrayForce = [serviceForce componentsSeparatedByString:@"|"];
+            NSString * nowVersion = [localDic objectForKey:@"version"];
+            bIsForce = YES;
+            for (int i = 0; i < [arrayForce count]; i++)
+            {
+                NSString * forceVersion = [arrayForce objectAtIndex:i];
+                if ([nowVersion intValue] == [forceVersion intValue])
+                {
+                    bIsForce = NO;
+                    NSLog(@"不需要强制升级");
+                    break;
+                }
+            }
+            
+            if (bIsForce)
+            {
+                self.serviceVersion = [obj objectForKey:@"version"];
+                NSInteger version = [[NSUserDefaults standardUserDefaults] integerForKey:@"version"];
+                if (version == [self.serviceVersion integerValue])
+                {
+                    [[Sqlite3Operation share] open];
+                    NSMutableArray * DawnLoadArray = [[NSMutableArray alloc] initWithCapacity:0];
+                    [[Sqlite3Operation share] getLoadingHistoryInfo:DawnLoadArray];
+                    
+                    for (LoadingHistoryInfo * info in DawnLoadArray)
+                    {
+                        if ([info.loadState intValue] == 0)
+                        {
+                            totalUrlRequest++;
+                        }
+                    }
+                    NSLog(@"%d",totalUrlRequest);
+                    
+                    for (int i = 0; i < [DawnLoadArray count]; i++)
+                    {
+                        LoadingHistoryInfo * info = [DawnLoadArray objectAtIndex:i];
+                        if ([info.loadState intValue] == 0)
+                        {
+                            if (!progressAlert) {
+                                NSString *updateMsg =[obj objectForKey:@"updateMsg"]?[obj objectForKey:@"updateMsg"]:@"程序文件有更新，需要更新后使用";
+                                progressAlert= [[PAAlertViewWithProgress alloc] initWithFistButton:nil
+                                                                                      SencodButton:nil
+                                                                                             Title:@"温馨提示"
+                                                                                           Message:updateMsg
+                                                                                          Delegate:self];
+                                [progressAlert performSelector:@selector(show) onThread:[NSThread mainThread] withObject:nil waitUntilDone:YES];
+                                [UIApplication sharedApplication].idleTimerDisabled = YES;
+                            }
+                            
+                            [self performSelectorOnMainThread:@selector(callBackSendHttpRequest:) withObject:info waitUntilDone:NO];
+                            
+                        }
+                    }
+                }
+                else{
+                    
+                    
+                    if (!progressAlert) {
+                        NSString *updateMsg =[obj objectForKey:@"updateMsg"]?[obj objectForKey:@"updateMsg"]:@"程序文件有更新，需要更新后使用";
+                        progressAlert= [[PAAlertViewWithProgress alloc] initWithFistButton:@"立即更新"
+                                                                              SencodButton:nil
+                                                                                     Title:@"温馨提示"
+                                                                                   Message:updateMsg
+                                                                                  Delegate:self];
+                        [progressAlert performSelector:@selector(show) onThread:[NSThread mainThread] withObject:nil waitUntilDone:YES];
+                    }
+                    
+                }
+                [self performSelectorOnMainThread:@selector(callBackUpdataDelegate:) withObject:@"0" waitUntilDone:NO];
+                NSLog(@"强制升级");
+            }
+            else
+            {
+                NSString * localVersion = [localDic objectForKey:@"version"];
+                self.serviceVersion = [obj objectForKey:@"version"];
+                if ([self.serviceVersion intValue] > [localVersion intValue])
+                {
+                    NSInteger version = [[NSUserDefaults standardUserDefaults] integerForKey:@"version"];
+                    if (version < [self.serviceVersion intValue])
+                    {
+                        NSString * tempDir = [NSString stringWithFormat:@"%@/%@/%@",[self getDocumentPath],LOCAL_MANIFEST_PATH,LOCAL_TEMP_PATH];
+                        NSString * sqlFile = [NSString stringWithFormat:@"%@/mydb.sqlite",[self getDocumentPath]];
+                        [self deleteDirectory:tempDir];
+                        [self deleteDirectory:sqlFile];
+                        [self performSelectorOnMainThread:@selector(callBackGetJsonFile) withObject:nil waitUntilDone:NO];
+                        //[[NetController shareNetController] sendRequestWithID:20001 CustomURLString:customUrlType Body:self.jsonUrl CallBackDelegate:self RemovePreviousRequest:NO];
+                    }
+                    else
+                    {
+                        [[Sqlite3Operation share] open];
+                        NSMutableArray * DawnLoadArray = [[NSMutableArray alloc] initWithCapacity:0];
+                        [[Sqlite3Operation share] getLoadingHistoryInfo:DawnLoadArray];
+                        for (int i = 0; i < [DawnLoadArray count]; i++)
+                        {
+                            LoadingHistoryInfo * info = [DawnLoadArray objectAtIndex:i];
+                            if ([info.loadState intValue] == 0)
+                            {
+                                [self performSelectorOnMainThread:@selector(callBackSendHttpRequest:) withObject:info waitUntilDone:NO];
+                                
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    NSLog(@"不用升级");
+                }
+                [self performSelectorOnMainThread:@selector(callBackUpdataDelegate:) withObject:@"1" waitUntilDone:NO];
+            }
+            return;
+        }
+        if (connectID == 20001)
+        {
+            [[NSUserDefaults standardUserDefaults] setInteger:[self.serviceVersion intValue] forKey:@"version"];
+            [[NSUserDefaults standardUserDefaults] synchronize];
+            
+            [[Sqlite3Operation share] open];
+            [[Sqlite3Operation share] getLoadingHistoryInfo:sqliteHistory];
+            [self createTempDirectory];
+            [jsonData appendData:(NSData*)callBackDictionary];
+            
+            NSString * manifestPath = [NSString stringWithFormat:@"%@/%@/%@/%@",[[WebViewCache shareInstance] getDocumentPath],LOCAL_MANIFEST_PATH,LOCAL_VERSIONDIC_PATH,self.jsonName];
+            [jsonData writeToFile:manifestPath atomically:YES];
+            [[NSUserDefaults standardUserDefaults] setValue:manifestPath forKey:@"manifestPath"];
+            [[NSUserDefaults standardUserDefaults] synchronize];
+            
+            
+            NSDictionary *obj = (NSDictionary *)[jsonData objectFromJSONDataWithParseOptions:JKParseOptionNone];
+            NSString *documentsDirectory = [[WebViewCache shareInstance] getDocumentPath];
+            NSString *documentDBFolderPath = [documentsDirectory stringByAppendingFormat:@"/%@/%@",LOCAL_MANIFEST_PATH,LOCAL_MANIFESTFILE_PATH];
+            [self getLocalFileInfo:documentDBFolderPath];
+            [self compareDataToUpdate:obj];
+            
+            [self getServerFileInfo:obj];
+            
+            totalUrlRequest = [sqliteHistory count];
+            NSLog(@">>>>>>> %d",totalUrlRequest);
+            if (totalUrlRequest == 0) {
+            
+                [self updateProgress:1.0];
+            }
+            //[self deleteFileAndFolder];
+            return;
+        }
+    }
+    else
+    {
+        [NSURLCache setSharedURLCache:[PAWebCache shareInstance]];
+        fileDictionary = [[NSMutableDictionary alloc] initWithDictionary:[self getFileDictionary]];
+        
+        [self performSelectorOnMainThread:@selector(callBackUpdataDelegate:) withObject:@"2" waitUntilDone:NO];
+    }
+    
+    
+    if (netState == net_Parser_SUCCES || netState == net_image || netState == net_HTML || netState == net_parser_error )
+    {
+        [[Sqlite3Operation share] changeOneLoadingHistoryState:connectID state:1];
+        
+        if (bIsForce) {
+            NSLog(@"%d",downLoadProgress);
+            [self updateProgress:1.0*(++downLoadProgress)/totalUrlRequest];
+            
+        }
+
+        
+        if (netState == net_image || netState == net_Parser_SUCCES || netState == net_parser_error)
+        {
+            NSData * data = (NSData*)callBackDictionary;
+            for (int i = 0; i < [sqliteHistory count]; i++)
+            {
+                LoadingHistoryInfo * info = [sqliteHistory objectAtIndex:i];
+                if (info.ID == connectID)
+                {
+                    NSString * strPath = [NSString stringWithFormat:@"%@/%@/%@/%@",[self getDocumentPath],LOCAL_MANIFEST_PATH,LOCAL_TEMP_PATH,info.localPath];
+                    NSArray * array = [strPath componentsSeparatedByString:@"/"];
+                    NSString * tempStr = [array objectAtIndex:[array count] -1];
+                    NSString * tempPath = [strPath substringToIndex:[strPath length] - [tempStr length]];
+                    [self createDirectory:tempPath];
+                    [data writeToFile:strPath atomically:YES];
+                    break;
+                }
+            }
+        }
+        else
+        {
+            NSString * data = (NSString*)callBackDictionary;
+            for (int i = 0; i < [sqliteHistory count]; i++)
+            {
+                LoadingHistoryInfo * info = [sqliteHistory objectAtIndex:i];
+                if (info.ID == connectID)
+                {
+                    NSString * strPath = [NSString stringWithFormat:@"%@/%@/%@/%@",[self getDocumentPath],LOCAL_MANIFEST_PATH,LOCAL_TEMP_PATH,info.localPath];
+                    NSArray * array = [strPath componentsSeparatedByString:@"/"];
+                    NSString * tempStr = [array objectAtIndex:[array count] -1];
+                    NSString * tempPath = [strPath substringToIndex:[strPath length] - [tempStr length]];
+                    [self createDirectory:tempPath];
+                    //[data writeToFile:strPath atomically:YES];
+                    NSError * error;
+                    [data writeToFile:strPath atomically:YES encoding:NSUTF8StringEncoding error:&error];
+                    break;
+                }
+            }
+        }
+        
+        
+        
+        if (bIsForce)
+        {
+            
+            BOOL bAllFinish = YES;
+            [sqliteHistory removeAllObjects];
+            [[Sqlite3Operation share] getLoadingHistoryInfo:sqliteHistory];
+            for (int i = 0; i < [sqliteHistory count]; i++)
+            {
+                LoadingHistoryInfo * info = [sqliteHistory objectAtIndex:i];
+                if ([info.loadState intValue] != 1)
+                {
+                    bAllFinish = NO;
+                    break;
+                }
+            }
+            if (bAllFinish)
+            {
+                [self updateProgress:1.0];
+                [self moveFileToDirectory];
+                NSString * tempDir = [NSString stringWithFormat:@"%@/%@/%@",[self getDocumentPath],LOCAL_MANIFEST_PATH,LOCAL_TEMP_PATH];
+                NSString * sqlFile = [NSString stringWithFormat:@"%@/mydb.sqlite",[self getDocumentPath]];
+                [self deleteDirectory:tempDir];
+                [self deleteDirectory:sqlFile];
+                [self deleteFileAndFolder];
+                [self changeVersionFileAndJsonFile];
+                [self updataDictionary];
+                
+                [self performSelectorOnMainThread:@selector(callBackForceDelegate) withObject:nil waitUntilDone:NO];
+            }
+        }
+    }
+}
+
+
+- (void)callBackWithConnectID:(int)connectID
+					 WithData:callBackDictionary
+				 WithNetState:(int)netState
+{
+    if (netState == net_ConnectFailed || netState == net_ConnectTimeOut || netState == net_killed)
+    {
+        //connectID = 20000是version下载失败 connectID = 20001是json文件下载失败  其他都是文件下载失败
+        if (connectID == 20000) {
+            [self performSelectorOnMainThread:@selector(callBackUpdataDelegate:) withObject:@"2" waitUntilDone:NO];
+        }
+        if (connectID == 20001) {
+            [self performSelectorOnMainThread:@selector(callBackUpdataDelegate:) withObject:@"2" waitUntilDone:NO];
+            if(bIsForce && progressAlert){
+                //强制升级失败
+                [UIApplication sharedApplication].idleTimerDisabled = NO;
+                if ([delegate respondsToSelector:@selector(versionForceFailed)])
+                {
+                    [delegate versionForceFailed];
+                }
+            }
+        }
+        else{
+            if(bIsForce){
+                //强制升级失败
+                [UIApplication sharedApplication].idleTimerDisabled = NO;
+                if ([delegate respondsToSelector:@selector(versionForceFailed)])
+                {
+                    [delegate versionForceFailed];
+                }
+            
+            }else{
+              [self performSelectorOnMainThread:@selector(callBackUpdataDelegate:) withObject:@"2" waitUntilDone:NO];
+            }
+        }
+        return;
+    }
+    else
+    {
+        if (connectID == 20000)
+        {
+            NSString * stringConnectID = [NSString stringWithFormat:@"%d",connectID];
+            NSString * stringNetState = [NSString stringWithFormat:@"%d",netState];
+            NSArray * array = [NSArray arrayWithObjects:stringConnectID,callBackDictionary,stringNetState, nil];
+            [NSThread detachNewThreadSelector:@selector(callBackNetWork:) toTarget:self withObject:array];
+        }
+        else
+        {
+            NSString * stringConnectID = [NSString stringWithFormat:@"%d",connectID];
+            NSString * stringNetState = [NSString stringWithFormat:@"%d",netState];
+            NSArray * array = [NSArray arrayWithObjects:stringConnectID,callBackDictionary,stringNetState, nil];
+            [self callBackNetWork:array];
+           
+        }
+    }
+
+
+    return;
+    
+   }
+
+
+-(void)finishUpdata
+{
+    NSString * sqlPath = [NSString stringWithFormat:@"%@/mydb.sqlite",[self getDocumentPath]];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    if (![fileManager fileExistsAtPath:sqlPath])
+    {
+        return;
+    }
+    BOOL bAllFinish = YES;
+    [[Sqlite3Operation share] open];
+    [sqliteHistory removeAllObjects];
+    [[Sqlite3Operation share] getLoadingHistoryInfo:sqliteHistory];
+    for (int i = 0; i < [sqliteHistory count]; i++)
+    {
+        LoadingHistoryInfo * info = [sqliteHistory objectAtIndex:i];
+        if ([info.loadState intValue] != 1)
+        {
+            bAllFinish = NO;
+            break;
+        }
+    }
+    if (bAllFinish)
+    {
+        [self moveFileToDirectory];
+        NSString * tempDir = [NSString stringWithFormat:@"%@/%@/%@",[self getDocumentPath],LOCAL_MANIFEST_PATH,LOCAL_TEMP_PATH];
+        NSString * sqlFile = [NSString stringWithFormat:@"%@/mydb.sqlite",[self getDocumentPath]];
+        [self deleteDirectory:tempDir];
+        [self deleteDirectory:sqlFile];
+        [self deleteFileAndFolder];
+        [self changeVersionFileAndJsonFile];
+        [self updataDictionary];
+    }
+}
+
+-(void)moveFileToDirectory
+{
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    for (int i = 0; i < [sqliteHistory count]; i++)
+    {
+        LoadingHistoryInfo * info = [sqliteHistory objectAtIndex:i];
+        NSString * srcPath = [NSString stringWithFormat:@"%@/%@/%@/%@",[self getDocumentPath],LOCAL_MANIFEST_PATH,LOCAL_TEMP_PATH,info.localPath];
+        NSString * decPath = [NSString stringWithFormat:@"%@/%@/%@/%@",[self getDocumentPath],LOCAL_MANIFEST_PATH,LOCAL_ASSETS_PATH,info.localPath];
+        
+        NSMutableString * tempString = [NSMutableString stringWithString:info.localPath];
+        NSString* tempString1 = [tempString stringByDeletingLastPathComponent];
+        
+        NSString * bIsExistDic = [NSString stringWithFormat:@"%@/%@/%@/%@",[self getDocumentPath],LOCAL_MANIFEST_PATH,LOCAL_ASSETS_PATH,tempString1];
+        
+        if (![fileManager fileExistsAtPath:bIsExistDic])
+        {
+            NSError *error;
+            [fileManager createDirectoryAtPath:bIsExistDic withIntermediateDirectories:YES attributes:nil error:&error];
+        }
+        
+        //NSData * srcData = [NSData dataWithContentsOfFile:srcPath];
+        
+        // Copy the database sql file from the resourcepath to the documentpath
+        if ([fileManager fileExistsAtPath:srcPath])
+        {
+            if ([fileManager fileExistsAtPath:decPath])
+            {
+                [self deleteDirectory:decPath];
+            }
+            NSError *error;
+            [fileManager copyItemAtPath:srcPath toPath:decPath error:&error];
+        }
+    }
+}
+
+-(void)deleteDirectory:(NSString*)Path
+{
+
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSError *error;
+    if ([fileManager fileExistsAtPath:Path])
+    {
+        [fileManager removeItemAtPath:Path error:&error];
+    }
+}
+
+-(void)changeVersionFileAndJsonFile
+{
+    NSString * versionPath = [NSString stringWithFormat:@"%@/%@/%@",[[WebViewCache shareInstance] getDocumentPath],LOCAL_MANIFEST_PATH,LOCAL_VERSION_PATH];
+    NSString * versionTemp = [[NSUserDefaults standardUserDefaults] valueForKey:@"versionPath"];
+    
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    // Copy the database sql file from the resourcepath to the documentpath
+    if ([fileManager fileExistsAtPath:versionTemp])
+    {
+        if ([fileManager fileExistsAtPath:versionPath])
+        {
+            [self deleteDirectory:versionPath];
+        }
+        NSError *error;
+        [fileManager copyItemAtPath:versionTemp toPath:versionPath error:&error];
+    }
+    
+    NSString * manifestPath = [NSString stringWithFormat:@"%@/%@/%@",[[WebViewCache shareInstance] getDocumentPath],LOCAL_MANIFEST_PATH,LOCAL_MANIFESTFILE_PATH];
+    NSString * manifestPathTemp = [[NSUserDefaults standardUserDefaults] valueForKey:@"manifestPath"];
+    if ([fileManager fileExistsAtPath:manifestPathTemp])
+    {
+        if ([fileManager fileExistsAtPath:manifestPath])
+        {
+            [self deleteDirectory:manifestPath];
+        }
+        NSError *error;
+        [fileManager copyItemAtPath:manifestPathTemp toPath:manifestPath error:&error];
+    }
+}
+
+-(NSMutableDictionary*)getFileDictionary
+{
+    NSMutableDictionary * mutableDictionary = [NSMutableDictionary dictionaryWithCapacity:5];
+    NSMutableArray * pathArray = [[NSMutableArray alloc] initWithCapacity:0];
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    NSString * manifestPath = [NSString stringWithFormat:@"%@/%@/%@",documentsDirectory,LOCAL_MANIFEST_PATH,LOCAL_ASSETS_PATH];
+    
+    [self allFilesAtPath:manifestPath Dictionary:mutableDictionary Array:pathArray];
+    [pathArray release];
+    
+    return mutableDictionary;
+}
+
+- (void)allFilesAtPath:(NSString *)direString Dictionary:(NSMutableDictionary*)dic Array:(NSMutableArray*)array
+{
+    //NSMutableArray *pathArray = [NSMutableArray array];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSArray *tempArray = [fileManager contentsOfDirectoryAtPath:direString error:nil];
+    for (NSString *fileName in tempArray) {
+        BOOL flag = YES;
+        NSString *fullPath = [direString stringByAppendingPathComponent:fileName];
+        if ([fileManager fileExistsAtPath:fullPath isDirectory:&flag]) {
+            if (!flag) {
+                // ignore .DS_Store
+                if (![[fileName substringToIndex:1] isEqualToString:@"."])
+                {
+                    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+                    NSString *documentsDirectory = [paths objectAtIndex:0];
+                    NSString * tempPath = [NSString stringWithFormat:@"%@/%@/%@",documentsDirectory,LOCAL_MANIFEST_PATH,LOCAL_ASSETS_PATH];
+                    NSString * tempstr = [fullPath substringFromIndex:[tempPath length]+1];
+                    [dic setObject:[fullPath URLEncodedString] forKey:[NSString stringWithFormat:@"%@%@%@",HOST_SERVER_IP,HOST_SERVER_PATH,tempstr]];
+                    //[dic setObject:fullPath forKey:[NSString stringWithFormat:@"http://www.localhost.com/manifest/%@",tempstr]];
+                    //[array addObject:fullPath];
+                }
+            }
+            else {
+                [self allFilesAtPath:fullPath Dictionary:dic Array:array];
+            }
+        }
+    }
+}
+
+-(void)addCachedToDictionary:(NSCachedURLResponse *)cachedResponse PathKey:(NSString*)pathString
+{
+    [cachedResponses setObject:cachedResponse forKey:pathString];
+}
+
+-(void)updataDictionary
+{
+    [fileDictionary removeAllObjects];
+    [fileDictionary release];
+    fileDictionary = nil;
+    fileDictionary = [[NSMutableDictionary alloc] initWithDictionary:[self getFileDictionary]];
+}
+
+
+- (BOOL)webView:(UIWebView *)theWebView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
+{
+    return YES;
+}
+
+- (void)webViewDidStartLoad:(UIWebView *)theWebView
+{
+
+}
+
+- (void)webViewDidFinishLoad:(UIWebView *)theWebView
+{
+    if ([delegate respondsToSelector:@selector(webviewLoadState:)])
+    {
+        bIsLoadingFinish = YES;
+        [delegate webviewLoadState:YES];
+    }
+}
+
+- (void)webView:(UIWebView *)theWebView didFailLoadWithError:(NSError *)error
+{
+    if ([error code] == -999)
+    {
+        return;
+    }
+    else
+    {
+        if ([delegate respondsToSelector:@selector(webviewLoadState:)])
+        {
+            bIsLoadingFinish = YES;
+            [delegate webviewLoadState:NO];
+        }
+    }
+}
+
+//解压文件到指定的解压目录
+-(BOOL)unzipManifestFile{
+    [NSThread detachNewThreadSelector:@selector(threadUnzip) toTarget:self withObject:nil];
+    return YES;
+}
+
+- (BOOL)threadUnzip {
+    [self checkUpdataClient];
+    NSLog(@"unzipManifestFile start");
+    NSString *manifestFileName = @"manifest.zip";
+//    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+//    NSString *manifestFilePath = [documentsDirectory stringByAppendingPathComponent:@"manifest"];
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"unzipSuccess"])
+    {
+        [self performSelectorOnMainThread:@selector(sendVersionUrl) withObject:nil waitUntilDone:YES];
+        return false;
+    }
+//    if ([fileManager fileExistsAtPath:manifestFilePath])
+//    {
+//        
+//        NSLog(@"shifouweikong");
+//        [self performSelectorOnMainThread:@selector(sendVersionUrl) withObject:nil waitUntilDone:YES];
+//        return false;
+//    }
+	BOOL ret = YES;
+	ZipArchive* zip = [[ZipArchive alloc] init];
+	NSString *zipFilePath = [[NSBundle mainBundle] pathForResource:manifestFileName ofType:nil];
+	NSString* unzipTo = documentsDirectory;
+    
+	if( [zip UnzipOpenFile:zipFilePath] )
+	{
+		ret = [zip UnzipFileTo:unzipTo overWrite:YES];
+		if( NO==ret )
+		{
+			NSLog(@"Failed to unzip file %@",zipFilePath);
+		}
+		[zip UnzipCloseFile];
+	}
+	[zip release];
+    
+    NSLog(@"unzipManifestFile end");
+    [self performSelectorOnMainThread:@selector(sendVersionUrl) withObject:nil waitUntilDone:YES];
+    
+    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"unzipSuccess"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    
+	return ret;
+}
+#pragma mark - PAAlertViewWithProgressDelegate
+- (void)PAAlertViewWithProgress:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
+    [progressAlert hiddenButton];
+    [UIApplication sharedApplication].idleTimerDisabled = YES;//屏幕长亮
+    [[NetController shareNetController] sendRequestWithID:20001 CustomURLString:customUrlType Body:self.jsonUrl CallBackDelegate:self RemovePreviousRequest:NO];
+    
+}
+
+-(void)updateProgress:(float)value{
+    if ( progressAlert) {
+        if (value==1.0) {
+            [progressAlert dismissWithClickedButtonIndex:0 animated:YES];
+            self.progressAlert = nil;
+            downLoadProgress = 0;
+            [UIApplication sharedApplication].idleTimerDisabled = NO;
+            return;
+            
+        }
+        [progressAlert hiddenButton];
+        [progressAlert refreshProgress:value];
+      
+    }
+  
+}
+
+
+-(void)dealloc
+{
+    [webview release];
+    [delegate release];
+    [fileDictionary release];
+    fileDictionary = nil;
+    [versionData release];
+    [jsonData release];
+    [sqliteHistory release];
+    [serverInfoArray release];
+    [localSaveInfoArray release];
+    [super dealloc];
+}
+
+@end

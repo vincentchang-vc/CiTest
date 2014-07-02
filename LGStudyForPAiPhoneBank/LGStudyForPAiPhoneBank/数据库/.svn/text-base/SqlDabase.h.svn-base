@@ -1,0 +1,33 @@
+//
+//  SqlDabase.h
+//
+
+#import <Foundation/Foundation.h>
+#import "sqlite3.h"
+
+#define kFilename @"bankHomedb.sqlite3"
+
+@interface SqlDabase : NSObject 
+{
+	sqlite3* dataBase;//数据库
+	
+	sqlite3_stmt* statement;//结果集
+}
+
+-(BOOL) openDataBase;
+
+-(void) closeDataBase;
+
+-(BOOL)execute:(NSString*) sql;
+
+-(NSMutableDictionary*) query:(NSString*) sql;
+//纯字符
+-(BOOL) insert:(NSString*) table Fields:(NSArray*) fields Values:(NSArray*) values;
+//字符＋byte
+- (BOOL)insert:(NSString*)table datas:(NSArray*)datas fields:(NSArray*)fields;
+@end
+
+
+
+
+

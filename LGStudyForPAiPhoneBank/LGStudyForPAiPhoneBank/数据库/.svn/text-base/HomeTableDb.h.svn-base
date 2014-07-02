@@ -1,0 +1,81 @@
+/*
+ 保存home&icon的数据
+*/
+#import <Foundation/Foundation.h>
+#import "SqlDabase.h"
+
+/*
+ 抽象菜单对象
+ */
+@interface HomeIconObject : NSObject
+{
+    NSString* menuCode;         // 菜单编码
+    NSString* menuHint;         // 按钮显示文本
+    NSString* menuIcon;         // icon&url
+    UIImage* menuImage;         // 缓存的图片数据
+    UIImage* menuSelImage;      // 缓存的图片数据
+    
+    NSString* menuVersion;      // 菜单版本号
+    NSString* router;           // 跳转路径
+    NSString* testRouter;       // 跳转路径［测试路径］
+    NSString* iconIndex;        // 在数组中的索引号
+    NSString* needDownload;     // 是否需要下载图标［YES/NO］
+    
+    // 添加menuName
+    NSString* menuName;         // 
+}
+@property(retain,nonatomic) NSString* menuCode;         // 菜单编码
+@property(retain,nonatomic) NSString* menuHint;         // 按钮显示文本
+@property(retain,nonatomic) NSString* menuIcon;         // icon&url
+@property(retain,nonatomic) UIImage* menuImage;         // 缓存的图片数据
+@property(retain,nonatomic) UIImage* menuSelImage;      // 缓存的图片数据
+
+@property(retain,nonatomic) NSString* menuVersion;      // 菜单版本号
+@property(retain,nonatomic) NSString* router;           // 跳转路径［正常路径］
+@property(retain,nonatomic) NSString* testRouter;       // 跳转路径［测试路径］
+
+@property(retain,nonatomic) NSString* iconIndex;         // 在数组中的索引号
+@property(retain,nonatomic) NSString* needDownload;     // 是否需要下载图标［YES/NO］
+
+@property(retain,nonatomic) NSString* menuName;         // 
+
+-(void)parseArray:(NSArray*)value;
+-(NSArray*)sortArray;
+@end
+
+#pragma ====================================================
+
+typedef enum _Bank_Db_Sort_Type{
+    
+    Bank_Db_Sort_Bank_Type = 0x10,      // 借记卡
+    Bank_Db_Sort_Credit_Type = 0x11,    // 行用卡
+    
+}Bank_Db_Sort_Type;
+
+@interface DBADTable : NSObject {
+	SqlDabase *db;
+    Bank_Db_Sort_Type userType;       // 用户类型的type 
+}
+
+@property(nonatomic)Bank_Db_Sort_Type userType;       // 用户类型的type
+//
+- (id)initWithType:(Bank_Db_Sort_Type)type;
+
+//检测是否创建 如果没有则创建
+- (void)createDBTable;
+
+//清空数据表
+- (void)clearDBTable;
+
+//查询所有 /*0:memuIndex 1:subversion 2:title 3:text 4:memo 5:adImg */
+- (NSMutableArray*)queryAll;
+
+//插入数据 /*0:memuIndex 1:subversion 2:title 3:text 4:memo 5:adImg */
+- (BOOL)insert:(NSArray*)datas;
+
+//根据更新数据 /*0:memuIndex 1:subversion 2:title 3:text 4:memo 5:adImg */
+- (BOOL)update:(NSArray*)datas;
+
+//根据类型ID删除记录 /*memuIndex*/
+- (void)deleteWithTypeID:(NSString*)typeID;
+@end

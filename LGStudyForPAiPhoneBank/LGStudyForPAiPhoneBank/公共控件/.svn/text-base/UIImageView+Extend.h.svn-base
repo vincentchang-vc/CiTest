@@ -1,0 +1,117 @@
+//
+//  UIImageView+Extend.h
+//  PAEBank
+//
+//  Created by 夏炳献 on 11-12-13.
+//  Copyright (c) 2011年 __MyCompanyName__. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+/* 
+ UIImageView 扩展类
+ 用于模拟uibutton click、move等事件
+*/
+
+typedef enum _UIImageView_Extend_EventType
+{
+    UIImageView_TouchBegin_Type = 0x21,
+    UIImageView_TouchMove_Type = 0x22, 
+    UIImageView_TouchEnd_Type = 0x23, 
+    UIImageView_TouchCancel_Type = 0x24,
+    
+}UIImageView_Extend_EventType;
+
+
+typedef enum _UIImageView_Extend_TagType
+{
+    UIImageView_Default_Tag_Type = 0x00,  // 普通类型
+    UIImageView_Diy_Tag_Type = 0x01,      // 自定义动化类型［按下抖动］
+    UIImageView_NoSelect_Tag_Type = 0x10, // 没选中状态类型
+    UIImageView_Foot_Tag_Type = 0x20, //状态类型
+    
+    UIImageView_Icon_Add_Type = 0x30, //添加状态类型
+    
+}UIImageView_Extend_TagType;
+
+#define Tag_Click_Frame_V  12
+#define Tag_Delete_Frame_V 28.0
+
+@interface UIImageView_Extend : UIView
+{
+    id curDelegate;             // 当前回调对象
+
+    UIImageView_Extend_TagType typeTag;               // 类型标识
+    
+}
+
+@property(nonatomic,assign) id curDelegate;             
+@property(nonatomic) UIImageView_Extend_TagType typeTag;
+
+
+/*
+ @(CGRect)frame：设置view的大小
+ @(NSDictionary*)settings：配置项字典，没有可以不填，规则如下：
+ ViewNormalBg:[Image*] // 背景没选中状态
+ ViewSelectBg:[Image*] // 背景选中状态
+ 
+ BtnNormalBg:[Image*] // 背景上按钮没选中状态
+ BtnSelectBg:[Image*] // 背景上按钮选中状态
+ 
+ TitleName:[NSString*]      // 提示文字的内容
+ TitleFont:[UIFont*]        // 提示文字的字体大小
+ TitleNorColor:[UIColor*]   // 提示文字的字体颜色［没选中］
+ TitleSelColor:[UIColor*]   // 提示文字的字体颜色［选中］
+ ArrorLine :[BOOL] Yes      // 是否是水平排列
+ IconUrl :[NSString*]       // 需要下载图片url
+*/
+-(id)initWithViewFrame:(CGRect)frame Setting:(NSDictionary*)settings;
+-(id)initWithViewFrame:(CGRect)frame Setting:(NSDictionary*)settings Tagtype:(UIImageView_Extend_TagType)type;
+
+/*
+ 设置是否显示高亮
+*/
+-(void)setSubViewLight:(BOOL)isLight;
+-(void)changeBtnImage:(UIImage*)btnImage Height:(UIImage*)selectImage;
+
+/*
+ 启动编辑状态的动画
+ */
+-(void)startEditAction;
+-(void)stopEditAction;
+-(BOOL)isActionFlag;
+-(void)consumeAction;
+@end
+
+#pragma mark====================================
+
+@protocol UIImageView_ExtendProtocol <NSObject>
+@optional
+/*
+ 当前响应Touch方法的处理
+ (UIImageView_Extend*)imageView :当前响应事件对象
+*/
+-(void)handleImageViewWithTouch:(UIImageView_Extend*)imageView 
+                          Touch:(NSSet *)touches 
+                      EventType:(UIImageView_Extend_EventType)eventType;
+/*
+ 当前响应TouchUp方法的处理
+ (UIImageView_Extend*)imageView :当前响应事件对象
+ */
+-(void)handleImageViewWithTouchUp:(UIImageView_Extend*)imageView;
+
+/*
+ 当前响应删除方法的处理
+ (UIImageView_Extend*)imageView :当前响应事件对象
+ */
+-(void)handleImageViewDelete:(UIImageView_Extend*)imageView;
+
+
+/*
+ 当前Icon图标下载完成回调
+ (UIImageView_Extend*)imageView :当前响应事件对象
+ (UIImage*)image :当前返回的图像数据
+ */
+-(void)handleImageDownLoad:(UIImageView_Extend*)imageView Image:(UIImage*)image;
+
+@end

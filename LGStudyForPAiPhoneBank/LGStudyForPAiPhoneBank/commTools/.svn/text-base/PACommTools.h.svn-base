@@ -1,0 +1,65 @@
+//
+//  PACommTools.h
+//  PAiPhoneBank2.0
+//
+//  Created by xiao on 4/13/13.
+//  Copyright (c) 2013 da zhan. All rights reserved.
+//
+
+#import "CDVPlugin.h"
+
+@interface PACommTools : CDVPlugin{
+    
+    CDVInvokedUrlCommand *tempCommand;
+    NSString* callbackId;
+    
+}
+@property (nonatomic, retain) CDVInvokedUrlCommand *tempCommand;
+@property (nonatomic, retain) NSString* callbackId;
+
+
+- (void)giveMarkForApp:(CDVInvokedUrlCommand*)command;
+- (void)getVersionInfo:(CDVInvokedUrlCommand*)command;
+- (void)copyToClipboard:(CDVInvokedUrlCommand*)command;
+/*  返回主页面方法 */
+- (void)goBackHome:(CDVInvokedUrlCommand*)command;
+/* 打开一个新的链接 */
+- (void)openUrl:(CDVInvokedUrlCommand*)command;
+/* 获取本地快捷菜单列表 */
+- (void)getMenus:(CDVInvokedUrlCommand*)command;
+- (void)setMenus:(CDVInvokedUrlCommand*)command;
+/* 是否显示底部 */
+- (void)showBottm:(CDVInvokedUrlCommand*)command;
+/* 界面跳转 */
+- (void)goRouter:(CDVInvokedUrlCommand*)command;
+/* 获取global interface entrance值 */
+- (void)getEnvironmentAndEntrance:(CDVInvokedUrlCommand*)command;
+/* 登录／登出 */
+-(void)login:(CDVInvokedUrlCommand*)command;
+-(void)loginOut:(CDVInvokedUrlCommand*)command;
+/* 设置导航条*/
+-(void)showHeader:(CDVInvokedUrlCommand*)command;
+/* 设置导航条按钮*/
+-(void)setNavButton:(CDVInvokedUrlCommand*)command;
+/* 设置导航条按钮*/
+-(void)setNavButtonEnabled:(CDVInvokedUrlCommand*)command;
+/*加载本地动画*/
+-(void)showDialog:(CDVInvokedUrlCommand*)command;
+-(void)hideDialog:(CDVInvokedUrlCommand*)command;
+/*修改预留验证信息*/
+-(void)alertHintMsg:(CDVInvokedUrlCommand*)command;
+//升级壳
+-(void)updateApplication:(CDVInvokedUrlCommand*)command;
+//获取appConfig
+-(void)getAppConfig:(CDVInvokedUrlCommand*)command;
+//获取系统时间
+-(void)getSystemTime:(CDVInvokedUrlCommand*)command;
+/* 通知native,PAWA框架加载完毕 */
+-(void)pawaComplete:(CDVInvokedUrlCommand*)command;
+//获取通知中心消息数目
+-(void)setNoticeNum:(CDVInvokedUrlCommand*)command;
+//获取资源的路径
+-(void)playAudio:(CDVInvokedUrlCommand*)command;
+//退出应用程序
+-(void)exitApplication:(CDVInvokedUrlCommand*)command;
+@end

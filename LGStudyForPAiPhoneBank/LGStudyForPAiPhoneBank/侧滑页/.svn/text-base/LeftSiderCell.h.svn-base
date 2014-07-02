@@ -1,0 +1,18 @@
+//
+//  LeftSiderCell.h
+//  PAiPhoneBank2.0
+//
+//  Created by xiao on 5/20/13.
+//  Copyright (c) 2013 da zhan. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "MKNumberBadgeView.h"
+#import "PAAsynDownloadImageView.h"
+
+@interface LeftSiderCell : UITableViewCell
+@property (nonatomic, retain) MKNumberBadgeView *badgeView;
+@property (nonatomic, retain) PAAsynDownloadImageView *imageView;
+@property (nonatomic, retain) UILabel     *label;
+@property (nonatomic, retain) UIImageView *arrowImageView;
+@end

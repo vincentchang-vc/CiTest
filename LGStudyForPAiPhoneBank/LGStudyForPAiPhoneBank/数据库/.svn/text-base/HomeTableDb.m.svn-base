@@ -1,0 +1,232 @@
+
+
+#import "HomeTableDb.h"
+
+/*
+ 抽象菜单对象
+ */
+@implementation HomeIconObject
+
+@synthesize menuCode;         // 菜单编码
+@synthesize menuHint;         // 按钮显示文本
+@synthesize menuIcon;         // icon&url
+@synthesize menuImage;        // 缓存的图片数据
+@synthesize menuSelImage;     // 缓存的图片数据
+
+@synthesize menuVersion;      // 菜单版本号
+@synthesize router;
+@synthesize testRouter;       // 跳转路径［测试路径］
+@synthesize iconIndex;
+@synthesize needDownload;     // 是否需要下载图标［YES/NO］
+
+@synthesize menuName;
+
+-(id)init
+{
+    self = [super init];
+    if( self )
+    {
+        self.needDownload = @"NO";      // 默认不需要下载图标
+    }
+    return self;
+}
+
+-(void)dealloc
+{
+    [menuCode release];
+    [menuHint release];
+    [menuIcon release];
+    [menuImage release];
+    [menuSelImage release];
+    [menuVersion release];
+    [router release];
+    [testRouter release];
+    [iconIndex release];
+    [needDownload release];
+    [menuName release];
+    [super dealloc];
+}
+
+-(void)parseArray:(NSArray*)value
+{
+    self.menuCode = [value objectAtIndex:0];
+	self.menuHint = [value objectAtIndex:1];
+	self.menuIcon = [value objectAtIndex:2];
+	self.menuVersion = [value objectAtIndex:3];
+    self.router = [value objectAtIndex:4];
+    self.iconIndex = [value objectAtIndex:5];
+    self.needDownload = [value objectAtIndex:6];
+    self.menuName = [value objectAtIndex:7];
+    //
+    if( self.menuName.length>0 )
+    {
+        self.menuImage = [UIImage imageNamed:self.menuName];
+    }
+    else            // 默认图片
+    {
+        self.menuImage = [UIImage imageNamed:@"home_eachTransfer_nor.png"];
+    }
+}
+
+-(NSArray*)sortArray
+{
+    // @"menuCode",@"menuHint",@"menuIcon",@"menuVersion",@"router",@"menuName"
+    NSMutableArray* sortData_f = [[NSMutableArray alloc] initWithCapacity:5];
+    [sortData_f addObject:[self.menuCode length]>0?self.menuCode:@""];
+    [sortData_f addObject:[self.menuHint length]>0?self.menuHint:@""];
+    [sortData_f addObject:[self.menuIcon length]>0?self.menuIcon:@""];
+    [sortData_f addObject:[self.menuVersion length]>0?self.menuVersion:@""];
+    [sortData_f addObject:[self.router length]>0?self.router:@""];
+    [sortData_f addObject:[self.iconIndex length]>0?self.iconIndex:@""];
+    [sortData_f addObject:[self.needDownload length]>0?self.needDownload:@"NO"];
+    [sortData_f addObject:[self.menuName length]>0?self.menuName:@""];
+    return [sortData_f autorelease];
+}
+
+@end
+
+#pragma ====================================================
+
+
+@implementation DBADTable
+
+@synthesize userType;
+
+- (id)init{
+	self = [super init];
+	if (self) {
+		db = [[SqlDabase alloc] init];
+        self.userType = Bank_Db_Sort_Bank_Type;           // 默认借记卡
+		[self createDBTable];
+	}
+	return self;	
+}
+
+
+- (id)initWithType:(Bank_Db_Sort_Type)type
+{
+	self = [super init];
+	if (self) {
+		db = [[SqlDabase alloc] init];
+        self.userType = type;           // 默认借记卡
+		[self createDBTable];
+	}
+	return self;
+}
+
+
+
+- (void)dealloc{
+	[db release];
+	[super dealloc];
+}
+
+//检测是否创建 如果没有则创建
+- (void)createDBTable{
+	/*menuCode; menuHint; menuIcon; menuVersion;router;menuImage;*/
+	NSString* createADTableSql = @"CREATE TABLE IF NOT EXISTS HomeTableEx(menuCode VARCHAR(20) PRIMARY KEY,"
+	" menuHint VARCHAR(20), menuIcon VARCHAR(100), menuVersion VARCHAR(20), router VARCHAR(100),iconIndex VARCHAR(20),needDownload VARCHAR(10),menuName VARCHAR(100))";
+    if( self.userType==Bank_Db_Sort_Credit_Type )
+    {
+        createADTableSql = @"CREATE TABLE IF NOT EXISTS HomeCreditTableEx(menuCode VARCHAR(20) PRIMARY KEY,"
+        " menuHint VARCHAR(20), menuIcon VARCHAR(100), menuVersion VARCHAR(20), router VARCHAR(100),iconIndex VARCHAR(20),needDownload VARCHAR(10),menuName VARCHAR(100))";
+    }
+	[db execute:createADTableSql];
+}
+
+
+//清空数据表
+- (void)clearDBTable{
+	
+	NSString* deleteADTableSql = @"DROP TABLE IF EXISTS HomeTableEx";
+    if( self.userType==Bank_Db_Sort_Credit_Type )
+    {
+        deleteADTableSql = @"DROP TABLE IF EXISTS HomeCreditTableEx";
+    }
+    
+	[db execute:deleteADTableSql];
+	
+	[self createDBTable];
+}
+
+//查询所有 /*menuCode; menuHint; menuIcon; menuVersion;router; menuImage;*/
+- (NSMutableArray*)queryAll{
+	NSMutableArray *allDatas = [[[NSMutableArray alloc] init] autorelease];
+	NSString *SQL = @"select * from HomeTableEx";
+    if( self.userType==Bank_Db_Sort_Credit_Type )
+    {
+        SQL = @"select * from HomeCreditTableEx";
+    }
+    
+	NSMutableDictionary *dataDic = [db query:SQL];
+	for (NSString *index in dataDic) {
+		
+		HomeIconObject *adField = [[HomeIconObject alloc] init];
+		NSArray *data = [dataDic objectForKey:index];
+		[adField parseArray:data];
+        [allDatas addObject:adField];
+		[adField release];
+		
+		
+	}
+	return allDatas;
+}
+
+
+//插入数据 /*menuCode; menuHint; menuIcon; menuVersion;router;testRouter; menuImage;*/
+- (BOOL)insert:(NSArray*)datas{
+	
+	NSArray *fields = [NSArray arrayWithObjects:@"menuCode",@"menuHint",@"menuIcon",@"menuVersion",@"router",@"iconIndex",@"needDownload",@"menuName",nil];
+
+	NSMutableArray *fieldDicDatas = [[[NSMutableArray alloc] init] autorelease];
+	//0:menuCode
+	NSDictionary *fieldDic = [NSDictionary dictionaryWithObjectsAndKeys:[datas objectAtIndex:0], @"SQLITE_TEXT", nil];
+	[fieldDicDatas addObject:fieldDic];
+	//1:menuHint
+	fieldDic = [NSDictionary dictionaryWithObjectsAndKeys:[datas objectAtIndex:1], @"SQLITE_TEXT", nil];
+	[fieldDicDatas addObject:fieldDic];
+	//2:menuIcon
+	fieldDic = [NSDictionary dictionaryWithObjectsAndKeys:[datas objectAtIndex:2], @"SQLITE_TEXT", nil];
+	[fieldDicDatas addObject:fieldDic];
+	//3:menuVersion
+	fieldDic = [NSDictionary dictionaryWithObjectsAndKeys:[datas objectAtIndex:3], @"SQLITE_TEXT", nil];
+	[fieldDicDatas addObject:fieldDic];
+    //4:router
+	fieldDic = [NSDictionary dictionaryWithObjectsAndKeys:[datas objectAtIndex:4], @"SQLITE_TEXT", nil];
+	[fieldDicDatas addObject:fieldDic];
+    //5:iconIndex
+	fieldDic = [NSDictionary dictionaryWithObjectsAndKeys:[datas objectAtIndex:5], @"SQLITE_TEXT", nil];
+	[fieldDicDatas addObject:fieldDic];
+    //6:needDownload
+	fieldDic = [NSDictionary dictionaryWithObjectsAndKeys:[datas objectAtIndex:6], @"SQLITE_TEXT", nil];
+	[fieldDicDatas addObject:fieldDic];
+	//7:menuName
+	fieldDic = [NSDictionary dictionaryWithObjectsAndKeys:[datas objectAtIndex:7], @"SQLITE_TEXT", nil];
+	[fieldDicDatas addObject:fieldDic];
+    
+	return [db insert:(self.userType==Bank_Db_Sort_Credit_Type)?@"HomeCreditTableEx":@"HomeTableEx"
+                datas:fieldDicDatas
+               fields:fields];
+	
+}
+//根据更新数据 /*menuCode; menuHint; menuIcon; menuVersion;router;testRouter; menuImage;*/
+- (BOOL)update:(NSArray*)datas{
+	//先删除
+	[self deleteWithTypeID:[datas objectAtIndex:0]];
+	//再重新插入
+	return [self insert:datas];
+	
+}
+//根据类型ID删除记录 /*menuCode*/
+- (void)deleteWithTypeID:(NSString*)typeID{
+
+	NSString *SQL = [NSString stringWithFormat:@"delete from HomeTableEx where menuCode='%@'",typeID];
+    if( self.userType==Bank_Db_Sort_Credit_Type )
+    {
+        SQL = [NSString stringWithFormat:@"delete from HomeCreditTableEx where menuCode='%@'",typeID];
+    }
+	
+	[db execute:SQL];
+}
+
+@end

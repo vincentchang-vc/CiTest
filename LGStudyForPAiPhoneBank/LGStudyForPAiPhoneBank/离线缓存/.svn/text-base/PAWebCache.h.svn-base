@@ -1,0 +1,22 @@
+//
+//  PAWebCache.h
+//  BridgeDemo
+//
+//  Created by da zhan on 13-2-27.
+//  Copyright (c) 2013年 xyh. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+#import "Define.h"
+
+@interface PAWebCache : NSURLCache{
+    NSMutableArray *moreAppArray;
+	NSMutableDictionary *cachedResponses;
+    NSMutableDictionary *fileDictionary;
+}
+
++(PAWebCache*)shareInstance;
+
+@end
+
+ 

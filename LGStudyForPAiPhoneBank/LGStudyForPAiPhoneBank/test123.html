@@ -1,0 +1,81 @@
+
+<! doctype html>
+<html lang = "en">
+    <head>
+        <title>My HTML 4 2- Column Page</title>
+        <link type = "text/css" href = "styles.css">
+            
+            <script type = "text/javascript">
+                var temp = "nothing";
+                
+                function loadURL(url) {
+                    var iFrame;
+                    iFrame = document.createElement("iframe");
+                    iFrame.setAttribute("src", url);
+                    iFrame.setAttribute("name", "name_frame");
+                    iFrame.setAttribute("style", "display:none;");
+                    iFrame.setAttribute("height", "0px");
+                    iFrame.setAttribute("width", "0px");
+                    iFrame.setAttribute("frameborder", "0");
+                    document.body.appendChild(iFrame);
+                    // 发起请求后这个iFrame就没用了，所以把它从dom上移除掉
+                    iFrame.parentNode.removeChild(iFrame);
+                    iFrame = null;
+                }
+//             <!--   将要传到原生页面的输入框ID放入sendCommand（）的参数中，让原生获取输入框中的字符串-->
+                function sendCommand(ID)
+                {
+                    var field = document.getElementById(ID);
+//                    loadURL("get1://"+field.value);
+                    loadURL("get1://"+encodeURI(field.value));
+                }
+            
+//             <!--   将要传到原生的Json字符串放入sendCommand2（）的参数中， 让原生获取所需的Json-->
+                function sendCommand2(wentJsonSting)
+                {
+                    temp = wentJsonSting;
+                    loadURL("get2://");
+                }
+            
+                function get()
+                {
+                    return encodeURI(temp);
+                }
+            </script>
+            
+            
+            </head>
+    <body onload = "drawSquare">
+        <p>test<input type="test" name="testName" id="testId"></p>
+            
+            <input type = "button" value = "调用原生1" onClick = "sendCommand('testId')"/>
+    
+            <input type = "button" value = "调用原生2" onClick = 'sendCommand2("{empno = 1120103025;list =     ({bankStaff = 1120147431;\"customer_cardID\" = 440101196606065628; limitYear = 431;phoneNumber = 18888843199;premium = 43100;products = \"一生无忧\";});}")'/>
+            
+            <section id = "main">
+                <header>
+                    <h1>My HTML 4 2 - Column Page</h1>
+                </header>
+                <nav>
+                    <u1>
+                        <li><a href = "#">Home</a></li>
+                        <li><a href = "#">Products</a></li>
+                        <li><a href = '/' title = 'Go to the Home page'>look</a></li>
+                    </u1>
+                </nav>
+                <section id = "contents">
+                    <p>Lorem ipsum TestToIos.</p>
+                </section>
+                
+                <!--
+                 <form action= 'protocol://' method = 'post' id='f'>
+                 <input type='text' id='a' />
+                 <input id='subButton' type='submit' value='submit' />
+                 </form>
+                 -->
+                
+                <footer>
+                    <p>&copy; 2011 J kyrnin</p>
+                </footer>
+                </body>
+</html>

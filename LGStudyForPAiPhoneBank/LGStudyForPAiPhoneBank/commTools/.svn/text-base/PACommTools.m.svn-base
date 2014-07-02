@@ -1,0 +1,486 @@
+//
+//  PACommTools.m
+//  PAiPhoneBank2.0
+//
+//  Created by xiao on 4/13/13.
+//  Copyright (c) 2013 da zhan. All rights reserved.
+//
+#import "CDVJSON.h"
+#import "PACommTools.h"
+#import "Global.h"
+
+#import "HomeViewController.h"
+#import "ControllerVersionTool.h"
+ 
+#import "LeftSiderViewController.h"
+ 
+#import "CommonMenuController.h"
+
+@implementation PACommTools
+
+@synthesize  tempCommand;
+@synthesize callbackId;
+
++(NSString*)getCurVersion
+{
+    // 获取当前版本号
+	NSDictionary *infoPlist = [[NSBundle mainBundle] infoDictionary];
+	NSString* versionStr_f  = [infoPlist objectForKey:@"CFBundleVersion"];
+    
+    NSMutableString* returnStr_f = [[NSMutableString alloc] initWithCapacity:3];
+	BOOL isAddFalg = FALSE;
+	for(int i=0;i<[versionStr_f length]; i++)
+	{
+		unichar char_f = [versionStr_f characterAtIndex:i];
+		if( char_f=='.' )
+		{
+			if( isAddFalg )
+				continue;
+			isAddFalg = TRUE;
+		}
+		[returnStr_f appendString:[NSString stringWithFormat:@"%c",char_f]];
+	}
+	NSString* tempStr_f = [NSString stringWithString:returnStr_f];
+	[returnStr_f release];
+	return tempStr_f;
+    
+}
+- (CDVPlugin *)initWithWebView:(UIWebView *)theWebView
+{
+	self = (PACommTools *)[super initWithWebView:theWebView];
+    
+	if (self)
+	{
+		
+	}
+    
+	return self;
+}
+//获取版本信息
+- (void)getVersionInfo:(CDVInvokedUrlCommand*)command{
+    self.tempCommand=command;
+    self.callbackId = command.callbackId;
+    
+    NSString *bundleVersion= [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"];
+    NSString *bundleVersionCode= [PACommTools getCurVersion];
+    NSDictionary *dic = [NSDictionary dictionaryWithObjectsAndKeys:bundleVersionCode,@"versionCode" ,bundleVersion,@"versionName",nil];
+   
+    CDVPluginResult* pluginResult = nil;
+   
+    NSString* echo = [dic JSONString];
+    if (echo != nil && [echo length] > 0) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:echo];
+    } else {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
+    }
+    
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+}
+// 给应用评分
+- (void)giveMarkForApp:(CDVInvokedUrlCommand*)command{
+    self.tempCommand=command;
+    self.callbackId = command.callbackId;
+    
+    // 去app评价页
+    NSString* suggestUrl_f = [NSString stringWithFormat:@"itms-apps://ax.itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?type=Purple+Software&id=%@",@"439212087"];
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:suggestUrl_f]];
+  
+   CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@""];
+    
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    
+  
+
+}
+//复制文本到剪切板
+- (void)copyToClipboard:(CDVInvokedUrlCommand*)command{
+    
+    self.tempCommand=command;
+    self.callbackId = command.callbackId;
+     UIPasteboard *pasetBoard = [UIPasteboard generalPasteboard];
+    if (command.arguments.count>0) {
+          NSString * str = [command.arguments objectAtIndex:0];
+          pasetBoard.string = str;
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@""];
+        
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    }
+
+}
+
+/*  返回主页面方法 */
+- (void)goBackHome:(CDVInvokedUrlCommand*)command
+{
+    self.tempCommand=command;
+    self.callbackId = command.callbackId;
+    
+    [[HomeViewController shareHomeController] goMainPage];
+    
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@""];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+}
+
+/* 打开一个新的链接 */
+- (void)openUrl:(CDVInvokedUrlCommand*)command
+{
+    self.tempCommand=command;
+    self.callbackId = command.callbackId;
+
+    if (command.arguments.count>0)
+    {
+        NSString * url = [command.arguments objectAtIndex:0];
+        NSString * title = [command.arguments objectAtIndex:1];
+        
+        [[HomeViewController shareHomeController] openWebWith:title Url:url];
+        
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@""];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    }
+}
+
+/* 获取本地快捷菜单列表 */
+- (void)getMenus:(CDVInvokedUrlCommand*)command
+{
+    //"title":"","router":"","icoUrl":"","code":"","version":"",
+    self.tempCommand=command;
+    self.callbackId = command.callbackId;
+    
+    NSArray* iconArray_f = [[HomeViewController shareHomeController] getHomeIcons];
+    NSString* echo = [iconArray_f JSONString];
+    NSLog(@"获取按钮：%@",echo);
+    
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:echo];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+}
+
+- (void)setMenus:(CDVInvokedUrlCommand*)command
+{
+    self.tempCommand=command;
+    self.callbackId = command.callbackId;
+    
+    if (command.arguments.count>0)
+    {
+        NSArray* addIcons_f = [command.arguments objectAtIndex:0];
+        NSLog(@"添加按钮：%@",addIcons_f);
+        
+        [[HomeViewController shareHomeController] setHomeIcons:addIcons_f];
+        
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@""];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    }
+    else
+    {
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@""];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    }
+}
+
+/* 是否显示底部 */
+- (void)showBottm:(CDVInvokedUrlCommand*)command
+{
+    self.tempCommand=command;
+    self.callbackId = command.callbackId;
+    
+    if (command.arguments.count>0)
+    {
+        BOOL flag = [[command.arguments objectAtIndex:0] boolValue];
+        
+        [[HomeViewController shareHomeController] showHomeFoot:flag];
+        
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@""];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    }
+    else
+    {
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@""];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    }
+}
+
+/* 界面跳转 */
+- (void)goRouter:(CDVInvokedUrlCommand*)command
+{
+    self.tempCommand=command;
+    self.callbackId = command.callbackId;
+    
+    if (command.arguments.count>0)
+    {
+        NSString* router = [command.arguments objectAtIndex:0];
+        
+        if( [router length]==0 )  // 没传，跳转到首页?
+        {
+            router = @"";
+        }
+        [[HomeViewController shareHomeController] handleMenuSkip:router];
+        
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@""];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    }
+    else
+    {
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@""];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    }
+}
+
+ /*获取环境InterFace和 entrance值*/
+- (void)getEnvironmentAndEntrance:(CDVInvokedUrlCommand*)command{
+    
+    self.tempCommand=command;
+    self.callbackId = command.callbackId;
+    NSString* echo = nil;
+    NSMutableDictionary *dic = [NSMutableDictionary dictionaryWithObjectsAndKeys:interFace, @"interFace",[NSString stringWithFormat:@"%d",entrance],@"entrance", nil];
+    echo = [dic JSONString];
+    CDVPluginResult* pluginResult = nil;
+    
+    if (echo != nil && [echo length] > 0) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:echo];
+    } else {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
+    }
+    
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    
+}
+
+/* 登录／登出 */
+-(void)login:(CDVInvokedUrlCommand*)command
+{
+    self.tempCommand=command;
+    self.callbackId = command.callbackId;
+    
+    if (command.arguments.count>0)
+    {
+        NSDictionary* loginData = [command.arguments objectAtIndex:0];
+        NSLog(@"LoginData:%@",loginData);
+        
+        [[HomeViewController shareHomeController] handleLoginData:YES Data:loginData];
+        
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@""];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    }
+    else
+    {
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@""];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    }
+
+}
+
+-(void)loginOut:(CDVInvokedUrlCommand*)command
+{
+    // 刷新界面
+    self.tempCommand=command;
+    self.callbackId = command.callbackId;
+        
+    [[HomeViewController shareHomeController] handleLoginData:FALSE Data:nil];
+    
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@""];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    
+
+}
+
+-(void)showHeader:(CDVInvokedUrlCommand*)command{
+    self.tempCommand=command;
+    self.callbackId = command.callbackId;
+    
+    if (command.arguments.count>0)
+    {        
+        [[HomeViewController shareHomeController] showHeader:command.arguments delegate:self];
+    }
+    else
+    {
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@""];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    }
+}
+
+-(void)leftNavAction{
+    [self.webView stringByEvaluatingJavaScriptFromString:@"wrapView.headerView.leftBtnClick()"];
+}
+-(void)rightNavAction{
+    [self.webView stringByEvaluatingJavaScriptFromString:@"wrapView.headerView.rightBtnClick()"];
+}
+-(void)setNavButton:(CDVInvokedUrlCommand*)command{
+    self.tempCommand=command;
+    self.callbackId = command.callbackId;
+    
+    if (command.arguments.count>0)
+    {
+        [[HomeViewController shareHomeController] setNavButton:command.arguments delegate:self];
+    }
+    else
+    {
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@""];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    }
+}
+-(void)setNavButtonEnabled:(CDVInvokedUrlCommand*)command{
+    self.tempCommand=command;
+    self.callbackId = command.callbackId;
+    
+    if (command.arguments.count>0)
+    {
+        [[HomeViewController shareHomeController] setNavButtonEnabled:command.arguments delegate:self];
+    }
+    else
+    {
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@""];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    }
+}
+/*加载本地动画*/
+-(void)showDialog:(CDVInvokedUrlCommand*)command
+{
+    self.tempCommand=command;
+    self.callbackId = command.callbackId;
+    
+    [[HomeViewController shareHomeController] showNetAction:YES];
+    
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@""];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    
+}
+
+-(void)hideDialog:(CDVInvokedUrlCommand*)command
+{
+    self.tempCommand=command;
+    self.callbackId = command.callbackId;
+    
+    [[HomeViewController shareHomeController] hideNetAction];
+    
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@""];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+}
+
+/*修改预留验证信息*/
+-(void)alertHintMsg:(CDVInvokedUrlCommand*)command
+{
+    self.tempCommand=command;
+    self.callbackId = command.callbackId;
+    
+    if (command.arguments.count==2)
+    {
+        NSString* fileName = [command.arguments objectAtIndex:0];
+        NSString* hintMsg = [command.arguments objectAtIndex:1];
+        
+        [[HomeViewController shareHomeController] alertPersonHintMsg:fileName Hint:hintMsg];
+        
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@""];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    }
+    else
+    {
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@""];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    }
+}
+
+//升级壳
+-(void)updateApplication:(CDVInvokedUrlCommand*)command{
+    self.tempCommand=command;
+    self.callbackId = command.callbackId;
+    
+    if( ![[ControllerVersionTool shareVersionTool] upDataVersion])
+    {
+        // Url地址有问题，用本地地址
+        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:[self getAppAddress]]];
+    }
+
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@""];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+}
+-(NSString *)getAppAddress{
+    NSBundle *bundle = [NSBundle mainBundle];
+    NSDictionary *urlsDic = [[NSDictionary alloc] initWithContentsOfFile:[bundle pathForResource:@"Urls" ofType:@"plist"]];
+    NSString * environmentStr = [urlsDic getStringByKey:@"PA_ENVIRONMENT"];
+    NSDictionary *appAddressDic = [urlsDic getStringByKey:@"appAddress"];
+    
+    NSString *appAddressStr = [appAddressDic getStringByKey:environmentStr];
+    
+    return appAddressStr;
+}
+-(void)getAppConfig:(CDVInvokedUrlCommand*)command{
+    self.tempCommand=command;
+    self.callbackId = command.callbackId;
+    
+    NSDictionary *dic = [[NetController shareNetController].cacheData objectForKey:@"AppConfig"];
+    CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dic];
+    [self.commandDelegate sendPluginResult:result callbackId:callbackId];
+}
+-(void)getSystemTime:(CDVInvokedUrlCommand*)command{
+    self.tempCommand=command;
+    self.callbackId = command.callbackId;
+    
+    NSDictionary *dic = [[NetController shareNetController].cacheData objectForKey:@"sysTime"];
+    CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dic];
+    [self.commandDelegate sendPluginResult:result callbackId:callbackId];
+}
+//获取通知中心消息数目
+-(void)setNoticeNum:(CDVInvokedUrlCommand*)command{
+    self.tempCommand=command;
+    self.callbackId = command.callbackId;
+    if (command.arguments.count>0) {
+        NSString * num = [command.arguments objectAtIndex:0];
+        [[HomeViewController shareHomeController] alertTitleBadge:num];
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@""];
+        
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    }
+
+}
+ 
+
+/* 通知native,PAWA框架加载完毕 */
+-(void)pawaComplete:(CDVInvokedUrlCommand*)command
+{
+    self.tempCommand=command;
+    self.callbackId = command.callbackId;
+    
+    //
+    [CommonMenuController shareCommonMenu].isLoadSatus = Bank_Web_Load_End_Type;
+    
+    CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@""];
+    [self.commandDelegate sendPluginResult:result callbackId:callbackId];
+}
+
+//
+-(void)playAudio:(CDVInvokedUrlCommand*)command
+{
+    self.tempCommand=command;
+    self.callbackId = command.callbackId;
+    
+    //
+    if (command.arguments.count>0) {
+        NSString * fileName = [command.arguments objectAtIndex:0];
+        [[HomeViewController shareHomeController] playAudio:fileName];
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@""];
+        
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    }
+}
+
+//退出应用程序
+-(void)exitApplication:(CDVInvokedUrlCommand*)command
+{
+    self.tempCommand=command;
+    self.callbackId = command.callbackId;
+    
+    //
+    exit(0);
+    
+    CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@""];
+    [self.commandDelegate sendPluginResult:result callbackId:callbackId];
+}
+
+- (void)dealloc
+{
+	[callbackId release];
+	[tempCommand release];
+ 
+    
+	[super dealloc];
+}
+
+@end

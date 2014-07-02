@@ -1,0 +1,34 @@
+//
+//  LoadingHistoryInfo.m
+//  WebViewCacheDemo
+//
+//  Created by coson on 13-4-23.
+//  Copyright (c) 2013年 coson. All rights reserved.
+//
+
+#import "LoadingHistoryInfo.h"
+
+@implementation LoadingHistoryInfo
+@synthesize localPath;
+@synthesize loadUrl;
+@synthesize loadState;
+@synthesize ID;
+
+-(void)dealloc
+{
+    [localPath release];
+    [loadUrl release];
+    [loadState release];
+    [super dealloc];
+}
+
+-(id)init
+{
+    if (self = [super init])
+    {
+        
+    }
+    return self;
+}
+
+@end

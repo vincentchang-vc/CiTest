@@ -1,0 +1,236 @@
+//
+//  Sqlite3Operation.m
+//  WebViewCacheDemo
+//
+//  Created by coson on 13-4-23.
+//  Copyright (c) 2013年 coson. All rights reserved.
+//
+#import "Sqlite3Operation.h"
+
+static Sqlite3Operation * shareInstance = nil;
+
+@implementation Sqlite3Operation
+
++(Sqlite3Operation*)share
+{
+    return shareInstance ? shareInstance : (shareInstance = [[Sqlite3Operation alloc] init]);
+}
+
+-(id)init
+{
+    if (self = [super init])
+    {
+        db = nil;
+    }
+    return self;
+}
+
+-(void)dealloc
+{
+    [shareInstance release];
+    [super dealloc];
+}
+
+//创建数据库，不存在，则创建
+-(BOOL)open
+{
+    NSArray * paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString * documentsDirectory = [paths objectAtIndex:0];
+    NSString * path = [documentsDirectory stringByAppendingPathComponent:@"mydb.sqlite"];
+    NSFileManager * fileManager = [NSFileManager defaultManager];
+    BOOL find = [fileManager fileExistsAtPath:path];
+    if (find)
+    {
+        if (sqlite3_open([path UTF8String], &db) != SQLITE_OK)
+        {
+            sqlite3_close(db);
+            NSLog(@"Error:open database file.");
+            return NO;
+        }
+        return YES;
+    }
+    
+    if (sqlite3_open([path UTF8String], &db) == SQLITE_OK)
+    {
+        [self createLoadingHistoryTable:db];
+        return YES;
+    }
+    else
+    {
+        sqlite3_close(db);
+        NSLog(@"Error:open data base file.");
+        return NO;
+    }
+    return NO;
+}
+
+
+
+//创建下载纪录历史表
+-(BOOL)createLoadingHistoryTable:(sqlite3 *)baseDB
+{
+    char * sql = "CREATE TABLE LoadHistory(id INTEGER PRIMARY KEY AUTOINCREMENT,HISTORY_URL text,HISTORY_PATH text,HISTORY_STATE text)";
+    sqlite3_stmt * statement;
+    if (sqlite3_prepare_v2(baseDB,sql, -1, &statement,nil) != SQLITE_OK)
+    {
+        NSLog(@"Error:failed to dehydrate:CREATE TABLE LoadHistory");
+        return NO;
+    }
+    int success = sqlite3_step(statement);
+    sqlite3_finalize(statement);
+    if (success != SQLITE_DONE)
+    {
+        NSLog(@"Error:failed to dehydrate:CREATE TABLE LoadHistory");
+        return NO;
+    }
+    
+    return YES;
+}
+
+
+//添加一条下载数据
+-(BOOL)insertOneLoadingHistory:(LoadingHistoryInfo*)marker
+{
+    sqlite3_stmt * statement;
+    NSString * sql = [NSString stringWithFormat:@"INSERT INTO LoadHistory(HISTORY_URL,HISTORY_PATH,HISTORY_STATE)VALUES('%@','%@','%@')",marker.loadUrl,marker.localPath,marker.loadState];
+    
+    int success = sqlite3_prepare_v2(db, [sql UTF8String], -1, &statement, NULL);
+    if (success != SQLITE_OK)
+    {
+        NSLog(@"Error:failed to insert");
+        return NO;
+    }
+    
+    success = sqlite3_step(statement);
+    sqlite3_finalize(statement);
+    
+    if (success == SQLITE_ERROR)
+    {
+        NSLog(@"Error:failed to insert");
+        sqlite3_close(db);
+        return NO;
+    }
+    return YES;
+}
+
+
+//获得所有下载纪录
+-(void)getLoadingHistoryInfo:(NSMutableArray*)HistoryArray
+{
+    sqlite3_stmt * statement = nil;
+    NSString * sql = [NSString stringWithFormat:@"select * from LoadHistory"];
+    
+    if (sqlite3_prepare_v2(db, [sql UTF8String], -1, &statement, NULL) != SQLITE_OK)
+    {
+        //NSLog(@"@Error:failed to prepare statement with message: get History");
+        return;
+    }
+    while (sqlite3_step(statement) == SQLITE_ROW)
+    {
+        LoadingHistoryInfo * info = [[LoadingHistoryInfo alloc] init];
+        info.ID = sqlite3_column_int(statement, 0);
+        info.loadUrl = [NSString stringWithUTF8String:(char*)sqlite3_column_text(statement, 1)];
+        info.localPath = [NSString stringWithUTF8String:(char*)sqlite3_column_text(statement, 2)];
+        info.loadState = [NSString stringWithUTF8String:(char*)sqlite3_column_text(statement, 3)];
+        
+        [HistoryArray addObject:info];
+        [info release];
+    }
+    sqlite3_finalize(statement);
+}
+
+//获得最新的一条数据
+-(int)getLastLoadingHistory
+{
+    sqlite3_stmt * statement = nil;
+    char * sql = "select * from LoadHistory where id = (select max(id) from LoadHistory)";
+    int history_ID = -1;
+    
+    if (sqlite3_prepare_v2(db, sql, -1, &statement, NULL) != SQLITE_OK)
+    {
+        NSLog(@"Error:failed to prepare statement with message: get History.");
+        return history_ID;
+    }
+    
+    while (sqlite3_step(statement) == SQLITE_ROW)
+    {
+        history_ID = sqlite3_column_int(statement, 0);
+    }
+    sqlite3_finalize(statement);
+    return history_ID;
+}
+
+
+//删除一条数据
+-(void)deleteOneLoadingHistory:(int)ID
+{
+    sqlite3_stmt * statement = nil;
+    NSString * sql = [NSString stringWithFormat:@"delete from LoadHistory where id = %d",ID];
+    int success = sqlite3_prepare_v2(db, [sql UTF8String], -1, &statement, NULL);
+    
+    if (success != SQLITE_OK)
+    {
+        NSLog(@"Error:failed to delete");
+        return;
+    }
+    
+    success = sqlite3_step(statement);
+    sqlite3_finalize(statement);
+    
+    if (success == SQLITE_ERROR)
+    {
+        NSLog(@"Error:failed to delete");
+        sqlite3_close(db);
+        return;
+    }
+}
+
+//删除所有数据
+-(void)deleteAllLoadingHistory
+{
+    sqlite3_stmt * statement = nil;
+    NSString * sql = [NSString stringWithFormat:@"delete from LoadHistory"];
+    int success = sqlite3_prepare_v2(db, [sql UTF8String], -1, &statement, NULL);
+    
+    if (success != SQLITE_OK)
+    {
+        NSLog(@"Error:failed to delete");
+        return;
+    }
+    
+    success = sqlite3_step(statement);
+    sqlite3_finalize(statement);
+    
+    if (success == SQLITE_ERROR)
+    {
+        NSLog(@"Error:failed to delete");
+        sqlite3_close(db);
+        return;
+    }
+}
+
+-(void)changeOneLoadingHistoryState:(int)ID state:(int)state
+{
+    sqlite3_stmt * statement = nil;
+    NSString * strState = [NSString stringWithFormat:@"%d",state];
+    NSString * sql = [NSString stringWithFormat:@"update LoadHistory set HISTORY_STATE = %@ where id = %d",strState,ID];
+    int success = sqlite3_prepare_v2(db, [sql UTF8String], -1, &statement, NULL);
+    
+    if (success != SQLITE_OK)
+    {
+        NSLog(@"Error:failed to change");
+        return;
+    }
+    
+    success = sqlite3_step(statement);
+    sqlite3_finalize(statement);
+    
+    if (success == SQLITE_ERROR)
+    {
+        NSLog(@"Error:failed to change");
+        sqlite3_close(db);
+        return;
+    }
+}
+
+@end

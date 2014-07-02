@@ -1,0 +1,96 @@
+//
+//  WebViewCache.h
+//  WebViewCacheDemo
+//
+//  Created by coson on 13-4-18.
+//  Copyright (c) 2013年 coson. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+#import "NetController.h"
+#import "UrlDefine.h"
+#import "Connection_Parser.h"
+#import "Define.h"
+#import "PAAlertViewWithProgress.h"
+
+@protocol PAWebCacheDelegate <NSObject>
+@optional
+-(void)webviewLoadState:(BOOL)state;   //1:加载成功 0:加载失败
+-(void)versionUpdataState:(int)state;  //0:强制升级 1:普通升级 2:升级错误提示,3 不用升级
+-(void)versionForceFinish;             //强制升级完成
+-(void)versionForceFailed;             //强制升级失败
+@end
+
+@interface WebViewCache : NSObject<Connection_Parser_Delegate,UIWebViewDelegate,PAAlertViewWithProgressDelegate>
+{
+    id delegate;
+    NSMutableArray * localSaveInfoArray;
+    NSMutableArray * serverInfoArray;
+    
+    NSMutableArray * sqliteHistory;
+    
+    NSString * jsonUrl;
+    NSString * versionUrl;
+    NSString * jsonName;
+    NSString * versionName;
+    
+    NSMutableData * versionData;
+    NSMutableData * jsonData;
+    
+    NSMutableDictionary *fileDictionary;
+    NSMutableDictionary *cachedResponses;
+    UIWebView * webview;
+    
+    NSString * serviceVersion;
+    
+    BOOL bIsLoadingFinish;
+    BOOL bIsForce;
+    
+    BOOL bIsNeenNet;
+    PAAlertViewWithProgress *progressAlert;
+    
+    int totalUrlRequest;
+}
+
+@property (nonatomic,retain) NSString * jsonUrl;
+@property (nonatomic,retain) NSString * versionUrl;
+@property (nonatomic,retain) NSString * jsonName;
+@property (nonatomic,retain) NSString * versionName;
+@property (nonatomic,retain) NSString * serviceVersion;
+@property (nonatomic,retain) NSMutableDictionary *fileDictionary;
+@property (nonatomic,retain) NSMutableDictionary *cachedResponses;
+@property (nonatomic) BOOL bIsLoadingFinish;
+@property (nonatomic) BOOL bIsNeenNet;
+@property (nonatomic) BOOL bIsForce;
+@property (nonatomic,retain) PAAlertViewWithProgress *progressAlert;
+
+
++(WebViewCache*)shareInstance;
+
+- (void)setDelegate:(id)delegate;
+-(void)createDirectory:(NSString*)directory;
+//移动文件夹目录到指定文件夹
+-(void) copyDirectory:(NSString *)directory;
+-(BOOL)unzipManifestFile;
+-(void)sendVersionUrl;
+-(NSString*) getDocumentPath;
+-(void) writeToFile:(NSData*)data path:(NSString*)path;
+-(NSData*)getFileData:(NSString*)Path;
+-(NSDictionary*)DataConversionToDictionary:(NSData*)data;
+-(NSDictionary*)getLocalFileInfo:(NSString*)path;
+-(void)compareDataToUpdate:(NSDictionary*)dictionary;
+
+-(NSDictionary*)getServerFileInfo:(NSDictionary*)dict;
+-(void)deleteFileAndFolder;
+-(void)xmlParser:(NSString*)data;
+
+-(void)addCachedToDictionary:(NSCachedURLResponse *)cachedResponse PathKey:(NSString*)pathString;
+
+- (void)loadURL:(NSString *)URLString;
+
+-(void)finishUpdata;
+//解压文件到指定的解压目录
+-(BOOL)unzipFile:(NSString*)zipFileName UnzipToDir:(NSString*)unzipToDir;
+//解压文件到指定的解压目录
+-(BOOL)unzipFileToDocumentsDir:(NSString*)zipFileName;
+@end
